@@ -12,6 +12,7 @@ internal sealed class TreeJsonBuilder(IActiveInspectorProvider inspectors, IElem
         root["roots"] = rootsArray;
         root["device"] = DeviceDescription();
         root["port"] = Immons.Tools.Maui.Inspector.Web.Hosting.RemoteServer.Port;
+        root["adaptive"] = AdaptiveAvailable.Value;
 
         if (inspectors.Current is { } inspector)
         {
@@ -22,6 +23,22 @@ internal sealed class TreeJsonBuilder(IActiveInspectorProvider inspectors, IElem
 
         return root.ToJsonString();
     }
+
+    /// <summary>True when the app references Immons.Tools.Maui.Inspector.Extensions — the
+    /// ⋔ editor then writes "{ins:Adaptive}"; otherwise it falls back to nested
+    /// OnIdiom/OnPlatform, which needs no extra package.</summary>
+    static readonly Lazy<bool> AdaptiveAvailable = new(() =>
+    {
+        try
+        {
+            return Type.GetType(
+                "Immons.Tools.Maui.Inspector.Extensions.AdaptiveExtension, Immons.Tools.Maui.Inspector.Extensions") != null;
+        }
+        catch
+        {
+            return false;
+        }
+    });
 
     internal static string DeviceDescription()
     {

@@ -1,4 +1,5 @@
 global using Immons.Tools.Maui.Inspector.Features.Activation;
+global using Immons.Tools.Maui.Inspector.Features.Cookbook;
 global using Immons.Tools.Maui.Inspector.Features.Dumping;
 global using Immons.Tools.Maui.Inspector.Features.Editing;
 global using Immons.Tools.Maui.Inspector.Features.Highlighting;

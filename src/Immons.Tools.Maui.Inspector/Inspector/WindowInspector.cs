@@ -192,6 +192,12 @@ internal sealed partial class WindowInspector
         _panelLayer.SelectModeToggled += SetSelectMode;
         _panelLayer.MeasureModeToggled += SetMeasureMode;
         _panelLayer.DebugPaintToggled += SetDebugPaint;
+        _panelLayer.CookbookRequested += () =>
+        {
+            // The gallery is a page of its own — long-press any tile to inspect it.
+            Hide();
+            _ = InspectorServices.Current.Cookbook.OpenAsync(null);
+        };
         _panelLayer.ElementPicked += (el, scrollTree) =>
         {
             if (_measureMode && _selected != null)

@@ -140,9 +140,12 @@ setInterval(async () => {
     }
 
     if (d.hseq !== undefined && d.hseq !== histSeq) {
+      const first = histSeq === 0;
       histSeq = d.hseq;
       if (!document.getElementById('histpanel').hidden)
         await loadHistory();
+      // Edits made anywhere (on the device too) change what the cookbook tiles show.
+      if (!first) cookbookOnEdit();
     }
 
     if (activeView === 'network') refreshNetworkView();

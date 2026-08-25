@@ -96,9 +96,10 @@ internal sealed class ElementCatalog : IElementCatalog
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
             var name = assembly.GetName().Name ?? "";
+            // The inspector's own packages by exact name — an app assembly may share the prefix.
             if (name.StartsWith("Microsoft.", StringComparison.Ordinal)
                 || name.StartsWith("System", StringComparison.Ordinal)
-                || name.StartsWith("Immons.Tools.Maui.Inspector", StringComparison.Ordinal)
+                || name is "Immons.Tools.Maui.Inspector" or "Immons.Tools.Maui.Inspector.Persistency" or "Immons.Tools.Maui.Inspector.Extensions"
                 || name.StartsWith("Mono.", StringComparison.Ordinal)
                 || name.StartsWith("Java.", StringComparison.Ordinal)
                 || name.StartsWith("Xamarin.", StringComparison.Ordinal)

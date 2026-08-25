@@ -337,3 +337,65 @@ input.warn { border-color: var(--measure); }
 .mirrorurl { color: var(--text2); font-size: 11px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .mirroritem.up { border-left: 3px solid #4caf50; }
 .mirroritem.down { border-left: 3px solid #e05252; opacity: .6; }
+
+/* Cookbook: toolbar, section chips and the card grid of device-captured previews. */
+#cookbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 4px 0 8px; border-bottom: 1px solid var(--divider); }
+#cookbar input[type=text] { min-width: 200px; flex: 0 1 280px; }
+.cooksep { width: 1px; height: 20px; background: var(--divider); margin: 0 4px; }
+.cooklabel { color: var(--text2); font-size: 12px; }
+#cookchips { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 0 2px; }
+#cookchips button { padding: 3px 10px; font-size: 12px; }
+#cookchips button.active { border-color: var(--accent); color: var(--accent); }
+.cooksection { color: var(--accent); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+               margin: 14px 0 8px; border-bottom: 1px solid var(--divider); padding-bottom: 4px; }
+.cooksection.hiddenbyfilter, .cookcards.hiddenbyfilter, .cookcard.hiddenbyfilter { display: none; }
+.cookcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.cookcard { border: 1px solid var(--divider); border-radius: 8px; background: var(--bg2); overflow: hidden;
+            display: flex; flex-direction: column; }
+.cookcard.changed { border-color: var(--measure); box-shadow: 0 0 0 2px rgba(232, 163, 61, .28); }
+.cookcard.newtile { border-style: dashed; }
+.cookcard.showingbase .cookpreview::after { content: 'before'; position: absolute; top: 6px; right: 8px; font-size: 10px;
+    color: var(--measure); background: var(--bg); padding: 0 5px; border-radius: 4px; }
+.cookpreview { position: relative; min-height: 72px; display: flex; align-items: center; justify-content: center; padding: 8px;
+               background: repeating-conic-gradient(#2c2f3b 0 25%, #262934 0 50%) 0 0 / 16px 16px; }
+.cookpreview img { max-width: 100%; height: auto; display: block; border-radius: 4px; }
+.cookswatch { width: 100%; height: 56px; border-radius: 6px; border: 1px solid var(--divider); }
+.cooknone { color: var(--text2); font-size: 11px; }
+.cookbody { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 3px; }
+.cookname { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: 13px; word-break: break-all; }
+.cookname .catalogbadge { flex: none; }
+.cookdetail, .cooksource { color: var(--text2); font-size: 11px; word-break: break-all; }
+.cooksource { font-family: ui-monospace, Menlo, Consolas, monospace; }
+.cookerror { color: var(--measure); font-size: 11px; }
+.cookerror[hidden] { display: none; }
+.cookactions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; align-items: center; }
+.cookactions button { padding: 2px 8px; font-size: 11px; }
+.cookactions select.cookstates { min-width: 0; font-size: 11px; padding: 2px 6px; }
+.catalogbadge.recipe { color: #7fd48a; }
+.catalogbadge.style, .catalogbadge.control { color: var(--accent); }
+.catalogbadge.implicit { color: var(--text2); }
+
+/* Cookbook property popup: the inspector's sheet in a centered card. */
+#cookpropsback { position: fixed; inset: 0; z-index: 55; background: rgba(0, 0, 0, .45);
+                 display: flex; align-items: center; justify-content: center; }
+#cookpropsback[hidden] { display: none; }
+#cookpropspanel { width: min(860px, 94vw); max-height: 84vh; display: flex; flex-direction: column;
+                  background: var(--bg); border: 1px solid var(--divider); border-radius: 10px;
+                  box-shadow: 0 12px 40px rgba(0, 0, 0, .5); }
+#cookpropshead { display: flex; gap: 12px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--divider); }
+#cookpropshead b { white-space: nowrap; }
+#cookpropshead .nethint { flex: 1; }
+#cookpropsbody { overflow: auto; padding: 4px 16px 16px; }
+#cookpropsbody[hidden] { display: none; }
+#cookfocuspreview { flex: 0 1 auto; max-height: 72vh; overflow: auto; padding: 10px 16px; border-bottom: 1px solid var(--divider);
+                    background: repeating-conic-gradient(#2c2f3b 0 25%, #262934 0 50%) 0 0 / 16px 16px; }
+#cookfocuspreview img { display: block; max-width: none; height: auto; border-radius: 4px; }
+#cookfocuspreview img:not([src]) { display: none; }
+#cookfocuspreview { cursor: grab; user-select: none; }
+#cookfocuspreview.panning { cursor: grabbing; }
+#cookzoom { display: flex; gap: 6px; align-items: center; }
+#cookzoom button { padding: 2px 8px; font-size: 11px; }
+#cookzoom input[type=range] { width: 110px; min-width: 0; }
+#cookzoom span { font-size: 11px; color: var(--text2); width: 38px; text-align: right; font-family: ui-monospace, Menlo, monospace; }
+#cookpropspanel.maximized { width: 96vw; max-height: 94vh; }
+#cookpropspanel.maximized #cookfocuspreview { max-height: 80vh; }

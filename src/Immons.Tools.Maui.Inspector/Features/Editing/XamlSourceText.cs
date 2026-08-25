@@ -24,13 +24,29 @@ internal static class XamlSourceText
             if (info?.SourceUri == null)
                 return null;
 
-            var text = Files.GetOrAdd(info.SourceUri.ToString(), Load);
+            var uri = info.SourceUri.ToString();
+            if (!Files.TryGetValue(uri, out var text))
+            {
+                text = Load(uri);
+                // Failures are not cached: the page's assembly may simply not be loaded yet.
+                if (text != null)
+                    Files[uri] = text;
+            }
             if (text == null)
                 return null;
 
             var offset = OffsetOf(text, info.LineNumber, info.LinePosition);
             if (offset < 0)
                 return null;
+            // LinePosition points at the tag name; tolerate small drift by re-anchoring
+            // on the nearest '<' just before the reported position.
+            if (offset >= text.Length || (offset > 0 && text[offset - 1] != '<'))
+            {
+                var open = text.LastIndexOf('<', Math.Min(offset, text.Length - 1));
+                if (open < 0 || offset - open > 300)
+                    return null;
+                offset = open + 1;
+            }
             var tagEnd = FindTagEnd(text, offset);
             if (tagEnd < 0)
                 return null;
@@ -58,8 +74,9 @@ internal static class XamlSourceText
 
         var assembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == assemblyName);
+        var normalized = path.Replace('\\', '/');
         var resourceId = assembly?.GetCustomAttributes<Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>()
-            .FirstOrDefault(a => a.Path == path)?.ResourceId;
+            .FirstOrDefault(a => a.Path.Replace('\\', '/') == normalized)?.ResourceId;
         if (resourceId == null)
             return null;
 

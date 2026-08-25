@@ -29,6 +29,9 @@ internal static class InspectorServiceRegistration
         services.AddSingleton<ISyncTracker, SyncTracker>();
         services.AddSingleton<IAppliedExpressions, PersistentAppliedExpressions>();
         services.AddSingleton<IPropertyCollector, PropertyCollector>();
+        services.AddSingleton<IResourceScopes, ResourceScopes>();
+        services.AddSingleton<ICookbookCatalog, CookbookCatalog>();
+        services.AddSingleton<ICookbookHost, CookbookHost>();
         services.AddSingleton<InspectorServices>();
         // Resolves the graph the moment MauiApp.Build() completes — before any app code runs.
         services.AddSingleton<IMauiInitializeService, InspectorServicesInitializer>();

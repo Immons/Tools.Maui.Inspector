@@ -68,8 +68,12 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
 	</ItemGroup>
 
+	<!-- A package reference imports this by itself (build/…targets); a project reference needs the line. -->
+	<Import Project="..\..\src\Immons.Tools.Maui.Inspector\build\Immons.Tools.Maui.Inspector.targets" />
+
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Immons.Tools.Maui.Inspector\Immons.Tools.Maui.Inspector.csproj" />
+		<ProjectReference Include="..\..\src\Immons.Tools.Maui.Inspector.Extensions\Immons.Tools.Maui.Inspector.Extensions.csproj" />
 		<ProjectReference Include="..\..\src\Immons.Tools.Maui.Inspector.Persistency\Immons.Tools.Maui.Inspector.Persistency.csproj" />
 	</ItemGroup>
 

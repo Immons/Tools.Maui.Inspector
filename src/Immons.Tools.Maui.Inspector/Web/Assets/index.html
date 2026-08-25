@@ -21,6 +21,7 @@
   </div>
   <nav id="viewnav">
     <button id="nav-inspector" class="tabbtn active" onclick="showView('inspector')">🧭 Inspector</button>
+    <button id="nav-cookbook" class="tabbtn" onclick="showView('cookbook')" title="Design cookbook — the app's styles, controls, colors, fonts and images as live samples">📚 Cookbook</button>
     <button id="nav-network" class="tabbtn" onclick="showView('network')" title="HTTP requests, breakpoints, mock rules">🌐 Network</button>
     <button id="nav-logs" class="tabbtn" onclick="showView('logs')" title="ILogger output">📋 Logs</button>
     <button id="nav-devices" class="tabbtn" onclick="showView('devices')" title="Multi-device hot reload targets">🖧 Devices</button>
@@ -119,6 +120,45 @@
   </div>
   <div id="view-logs" class="view fullview" hidden><div id="loglist"></div></div>
 
+  <div id="view-cookbook" class="view fullview" hidden>
+    <div id="cookbar">
+      <button id="cookOpenBtn" onclick="toggleCookbookOnDevice()" title="Push the cookbook page on the device — previews are captured from it">📱 Open on device</button>
+      <span class="cooksep"></span>
+      <span class="cooklabel">Theme</span>
+      <button id="theme-system" onclick="setAppTheme('system')" title="Follow the OS theme">⚙︎ System</button>
+      <button id="theme-light" onclick="setAppTheme('light')" title="Force the light theme on the whole app">☀︎ Light</button>
+      <button id="theme-dark" onclick="setAppTheme('dark')" title="Force the dark theme on the whole app">☾ Dark</button>
+      <span class="cooksep"></span>
+      <button onclick="refreshCookbook(true)" title="Reload the catalog and every preview">↻</button>
+      <button id="cookBaselineBtn" onclick="cookbookBaseline()" title="Remember every preview as it is now; later refreshes mark the tiles whose pixels changed">📌 Baseline</button>
+      <button id="cookChangedBtn" onclick="toggleChangedOnly()" hidden title="Show only the tiles that differ from the baseline">Δ changed only</button>
+      <input type="text" id="cooksearch" placeholder="Search key, type, file…" oninput="filterCookbook(this.value)">
+      <span id="cookhint" class="nethint"></span>
+    </div>
+    <div id="cookchips"></div>
+    <div id="cookgrid"></div>
+    <div id="cookpropsback" hidden onclick="if (event.target === this) closeCookbookProps()">
+      <div id="cookpropspanel">
+        <div id="cookpropshead">
+          <b id="cookpropstitle"></b>
+          <span id="cookpropshint" class="nethint"></span>
+          <span id="cookzoom">
+            <button onclick="setCookbookZoom('fit')" title="Fit the popup width">Fit</button>
+            <button onclick="setCookbookZoom(1)" title="1 dp = 1 px">100%</button>
+            <button onclick="setCookbookZoom(2)" title="Twice the size">200%</button>
+            <input id="cookzoomrange" type="range" min="25" max="400" value="100" title="Zoom — also Ctrl/⌘ + wheel over the preview" oninput="setCookbookZoom(this.value / 100)">
+            <span id="cookzoomval">100%</span>
+          </span>
+          <button id="cookSheetBtn" onclick="toggleCookbookSheet()" title="The sample's properties — own ones first, inherited folded, edited live">▤ Properties</button>
+          <button id="cookMaxBtn" onclick="toggleCookbookMax()" title="Enlarge the popup">⛶</button>
+          <button onclick="closeCookbookProps()" title="Close">✕</button>
+        </div>
+        <div id="cookfocuspreview"><img id="cookfocusimg" alt="the sample at full width on the device"></div>
+        <div id="cookpropsbody" hidden></div>
+      </div>
+    </div>
+  </div>
+
 
   <div id="view-devices" class="view fullview" hidden>
     <div class="devicesintro">Edits made in this panel are mirrored to every checked target —
@@ -143,6 +183,9 @@
 <script src="/js/mock.js"></script>
 <script src="/js/structure.js"></script>
 <script src="/js/resources.js"></script>
+<script src="/js/cookbook.js"></script>
+<script src="/js/cookbookdiff.js"></script>
+<script src="/js/cookbookprops.js"></script>
 <script src="/js/mirrors.js"></script>
 <script src="/js/diff.js"></script>
 <script src="/js/keyboard.js"></script>

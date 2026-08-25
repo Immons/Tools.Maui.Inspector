@@ -9,7 +9,9 @@ namespace Immons.Tools.Maui.Inspector.Features.Editing;
 /// </summary>
 internal static class DeviceValueExpressionParser
 {
-    static readonly Regex Expression = new(@"^\{\s*(OnPlatform|OnIdiom)\s+(.+)\}\s*$",
+    // The prefix is tolerated on all three ("{ext:Adaptive …}") — Adaptive always carries
+    // one, since it lives in the Immons.Tools.Maui.Inspector.Extensions xmlns.
+    static readonly Regex Expression = new(@"^\{\s*(?:\w+:)?(OnPlatform|OnIdiom|Adaptive)\s+(.+)\}\s*$",
         RegexOptions.Compiled | RegexOptions.Singleline);
 
     /// <summary>
@@ -24,27 +26,33 @@ internal static class DeviceValueExpressionParser
         if (!match.Success)
             return false;
 
-        var currentKey = match.Groups[1].Value == "OnPlatform" ? CurrentPlatformKey() : CurrentIdiomKey();
-        string? defaultValue = null;
+        // Keys tried most-specific-first; Adaptive resolves idiom+platform, then idiom.
+        var keys = match.Groups[1].Value switch
+        {
+            "OnPlatform" => new[] { CurrentPlatformKey() },
+            "OnIdiom" => [CurrentIdiomKey()],
+            _ => [CurrentAdaptiveKey(), CurrentIdiomKey()],
+        };
 
+        var entries = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var pair in SplitPairs(match.Groups[2].Value))
         {
             var eq = IndexOfTopLevel(pair, '=');
             if (eq < 0)
-            {
-                defaultValue = Unquote(pair); // bare leading value = Default
-                continue;
-            }
-
-            var key = pair[..eq].Trim();
-            var value = Unquote(pair[(eq + 1)..]);
-            if (key.Equals("Default", StringComparison.OrdinalIgnoreCase))
-                defaultValue = value;
-            else if (key.Equals(currentKey, StringComparison.OrdinalIgnoreCase))
-                currentValue = value;
+                entries["Default"] = Unquote(pair); // bare leading value = Default
+            else
+                entries[pair[..eq].Trim()] = Unquote(pair[(eq + 1)..]);
         }
 
-        currentValue ??= defaultValue;
+        foreach (var key in keys)
+        {
+            if (entries.TryGetValue(key, out var forKey))
+            {
+                currentValue = forKey;
+                return true;
+            }
+        }
+        currentValue = entries.GetValueOrDefault("Default");
         return true;
     }
 
@@ -80,6 +88,16 @@ internal static class DeviceValueExpressionParser
         if (platform == DevicePlatform.WinUI) return "WinUI";
         if (platform == DevicePlatform.MacCatalyst) return "MacCatalyst";
         return platform.ToString();
+    }
+
+    /// <summary>"PhoneIOS", "TabletAndroid"… — the Adaptive extension's combined keys.</summary>
+    static string CurrentAdaptiveKey()
+    {
+        var platform = DeviceInfo.Current.Platform;
+        var platformKey = platform == DevicePlatform.iOS || platform == DevicePlatform.MacCatalyst ? "IOS"
+            : platform == DevicePlatform.Android ? "Android"
+            : platform.ToString();
+        return CurrentIdiomKey() + platformKey;
     }
 
     static string CurrentIdiomKey()

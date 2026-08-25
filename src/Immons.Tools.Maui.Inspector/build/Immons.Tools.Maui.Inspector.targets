@@ -1,0 +1,29 @@
+<Project>
+  <!--
+    Design cookbook: the app bundle keeps bundled images by file name only (resizetizer flattens
+    Resources/Images/2.0/beer.svg to beer.png). This records where each MauiImage came from as an
+    embedded manifest the inspector reads at runtime, so the cookbook's Images section can be
+    filtered by folder (IncludedResources.Add("Resources/Images/2.0/")). Set
+    MauiInspectorImageManifest=false to opt out, or to a path to place the file elsewhere.
+  -->
+  <Target Name="MauiInspectorWriteImageManifest"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(UseMaui)' == 'true' And '$(TargetFramework)' != '' And '$(MauiInspectorImageManifest)' != 'false'">
+    <!-- Resolved here, not at import time: an explicit <Import> of this file may run before the
+         SDK defines IntermediateOutputPath (a package reference imports it late enough). -->
+    <PropertyGroup>
+      <_MauiInspectorImageManifestPath>$(MauiInspectorImageManifest)</_MauiInspectorImageManifestPath>
+      <_MauiInspectorImageManifestPath Condition="'$(_MauiInspectorImageManifestPath)' == ''">$(IntermediateOutputPath)maui-inspector-images.txt</_MauiInspectorImageManifestPath>
+      <_MauiInspectorImageManifestDir>$([System.IO.Path]::GetDirectoryName($(_MauiInspectorImageManifestPath)))</_MauiInspectorImageManifestDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_MauiInspectorImageEntry Include="@(MauiImage->'%(Filename)|%(Identity)')" />
+    </ItemGroup>
+    <MakeDir Directories="$(_MauiInspectorImageManifestDir)" Condition="'$(_MauiInspectorImageManifestDir)' != ''" />
+    <WriteLinesToFile File="$(_MauiInspectorImageManifestPath)" Lines="@(_MauiInspectorImageEntry)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <EmbeddedResource Include="$(_MauiInspectorImageManifestPath)" LogicalName="maui-inspector-images.txt" Visible="false" />
+      <FileWrites Include="$(_MauiInspectorImageManifestPath)" />
+    </ItemGroup>
+  </Target>
+</Project>

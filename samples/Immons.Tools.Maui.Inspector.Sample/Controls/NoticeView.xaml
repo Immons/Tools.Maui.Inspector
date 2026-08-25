@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:SampleApp.Controls"
+             x:Class="SampleApp.Controls.NoticeView"
+             x:Name="Root">
+
+    <!-- A XAML custom control the way real apps write them: labels bound to the control's own
+         bindable properties through x:Reference, colors and styles from the app resources. -->
+    <Border Padding="14,10"
+            BackgroundColor="{StaticResource Primary}"
+            StrokeThickness="0">
+        <Border.StrokeShape>
+            <RoundRectangle CornerRadius="10" />
+        </Border.StrokeShape>
+        <VerticalStackLayout Spacing="2">
+            <Label Text="{Binding Title, Source={x:Reference Root}}"
+                   x:DataType="controls:NoticeView"
+                   TextColor="{StaticResource White}"
+                   FontAttributes="Bold" />
+            <Label Text="{Binding Subtitle, Source={x:Reference Root}}"
+                   x:DataType="controls:NoticeView"
+                   TextColor="#DDFFFFFF"
+                   FontSize="12" />
+        </VerticalStackLayout>
+    </Border>
+
+</ContentView>

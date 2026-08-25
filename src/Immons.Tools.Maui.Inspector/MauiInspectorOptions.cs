@@ -59,4 +59,7 @@ public sealed class MauiInspectorOptions
     /// Anything bigger is still logged and mockable — only its body is dropped.
     /// </summary>
     public int MaxCapturedBodyBytes { get; set; } = 4 * 1024 * 1024;
+
+    /// <summary>The design cookbook — the gallery of the app's styles, controls, colors, fonts and images.</summary>
+    public CookbookOptions Cookbook { get; } = new();
 }

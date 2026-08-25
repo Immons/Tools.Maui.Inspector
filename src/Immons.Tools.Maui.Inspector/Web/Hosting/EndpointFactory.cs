@@ -34,10 +34,14 @@ internal static class EndpointFactory
             new MockRulesEndpoint(InspectorServices.Current.NetworkRules, InspectorServices.Current.Recorder),
             new InterceptEndpoint(InspectorServices.Current.Breakpoints),
             new LogsEndpoint(InspectorServices.Current.Logs),
-            new Features.Editing.Web.ResourcesEndpoint(mainThread, inspectors, xamlChanges),
+            new Features.Editing.Web.ResourcesEndpoint(mainThread, InspectorServices.Current.ResourceScopes, xamlChanges, InspectorServices.Current.Cookbook),
             new ChangesEndpoint(xamlChanges, sync),
             new MirrorEndpoint(mainThread, inspectors),
             new MeasureEndpoint(mainThread, inspectors, elements),
+            new Features.Cookbook.Web.CookbookEndpoint(mainThread, InspectorServices.Current.Cookbook,
+                new Features.Cookbook.Web.CookbookJsonBuilder(InspectorServices.Current.Cookbook, elements),
+                new Features.Cookbook.Web.TilePreviewer(mainThread, InspectorServices.Current.Cookbook)),
+            new Features.Cookbook.Web.ThemeEndpoint(mainThread, InspectorServices.Current.Cookbook),
         ];
     }
 }

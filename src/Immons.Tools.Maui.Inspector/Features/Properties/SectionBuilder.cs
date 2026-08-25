@@ -51,8 +51,7 @@ internal static class SectionBuilder
         var text = XamlSourceText.AttributeText(el, property)?.Trim();
         if (text == null)
             return (null, null);
-        if (text.StartsWith("{OnIdiom", StringComparison.Ordinal)
-            || text.StartsWith("{OnPlatform", StringComparison.Ordinal))
+        if (System.Text.RegularExpressions.Regex.IsMatch(text, @"^\{\s*(?:\w+:)?(OnIdiom|OnPlatform|Adaptive)\b"))
             return (text, null);
         if (text.StartsWith("{StaticResource", StringComparison.Ordinal)
             || text.StartsWith("{DynamicResource", StringComparison.Ordinal))

@@ -7,6 +7,7 @@ async function refreshAll(skipProps) {
     (data.device ? data.device + '   ·   ' : '') + (data.window ? 'window ' + data.window + ' dp' : '');
   window.deviceStr = data.device || '';
   window.devicePort = data.port || null;
+  window.adaptiveAvailable = data.adaptive === true;
   if (data.window) {
     const wm = data.window.match(/^([\d.]+)×([\d.]+)$/);
     if (wm) windowDp = [parseFloat(wm[1]), parseFloat(wm[2])];

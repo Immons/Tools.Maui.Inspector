@@ -28,6 +28,7 @@ internal sealed class PanelLayer : Border
     public event Action<bool>? SelectModeToggled;
     public event Action<bool>? MeasureModeToggled;
     public event Action<bool>? DebugPaintToggled;
+    public event Action? CookbookRequested;
 
     /// <summary>(element, scrollTree) — scrollTree is false when picked from the tree itself.</summary>
     public event Action<VisualElement, bool>? ElementPicked;
@@ -71,6 +72,7 @@ internal sealed class PanelLayer : Border
 
         _tools = new PanelToolsBar { IsVisible = false };
         _tools.DebugPaintToggled += on => DebugPaintToggled?.Invoke(on);
+        _tools.CookbookRequested += () => CookbookRequested?.Invoke();
 
         _breadcrumb = new BreadcrumbBar();
         _breadcrumb.Picked += el => ElementPicked?.Invoke(el, true);

@@ -13,8 +13,9 @@ namespace Immons.Tools.Maui.Inspector.Features.Editing.Web;
 /// </summary>
 internal sealed class ResourcesEndpoint(
     IMainThreadDispatcher mainThread,
-    IActiveInspectorProvider inspectors,
-    IXamlChangeLog xamlChanges) : IHttpEndpoint
+    IResourceScopes scopes,
+    IXamlChangeLog xamlChanges,
+    ICookbookHost cookbook) : IHttpEndpoint
 {
     public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
     {
@@ -60,7 +61,7 @@ internal sealed class ResourcesEndpoint(
     string BuildList()
     {
         var groups = new JsonArray();
-        foreach (var (name, dictionary, source) in AllDictionaries())
+        foreach (var (name, dictionary, source) in scopes.All())
         {
             var entries = new JsonArray();
             foreach (var key in dictionary.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase))
@@ -171,7 +172,7 @@ internal sealed class ResourcesEndpoint(
     {
         string? valueMatch = null;
         var ambiguous = false;
-        foreach (var (_, dictionary, _) in AllDictionaries())
+        foreach (var (_, dictionary, _) in scopes.All())
         {
             foreach (var key in dictionary.Keys)
             {
@@ -194,7 +195,7 @@ internal sealed class ResourcesEndpoint(
     /// <summary>Re-types the entered text to match the resource's current value.</summary>
     (bool Ok, bool Recorded) SetResource(string key, string text)
     {
-        foreach (var (_, dictionary, source) in AllDictionaries())
+        foreach (var (_, dictionary, source) in scopes.All())
         {
             if (!dictionary.TryGetValue(key, out var existing))
                 continue;
@@ -222,6 +223,7 @@ internal sealed class ResourcesEndpoint(
 
             var recorded = xamlChanges.Enabled && !string.IsNullOrEmpty(source);
             xamlChanges.RecordResourceValue(source, key, text.Trim());
+            cookbook.RefreshSamples();
             return (true, recorded);
         }
         return (false, false);
@@ -232,7 +234,7 @@ internal sealed class ResourcesEndpoint(
     {
         if (oldValue == null)
             return;
-        foreach (var (_, dictionary, _) in AllDictionaries())
+        foreach (var (_, dictionary, _) in scopes.All())
         {
             foreach (var key in dictionary.Keys)
             {
@@ -299,7 +301,7 @@ internal sealed class ResourcesEndpoint(
     /// </summary>
     (bool Ok, bool Recorded) SetStyleSetter(string key, string propertyName, string text)
     {
-        foreach (var (_, dictionary, source) in AllDictionaries())
+        foreach (var (_, dictionary, source) in scopes.All())
         {
             if (!dictionary.TryGetValue(key, out var resource) || resource is not Style style)
                 continue;
@@ -315,7 +317,7 @@ internal sealed class ResourcesEndpoint(
             {
                 // Re-pointing the setter at another resource: resolve, coerce, record verbatim.
                 object? referenced = null;
-                foreach (var (_, candidates, _) in AllDictionaries())
+                foreach (var (_, candidates, _) in scopes.All())
                 {
                     if (candidates.TryGetValue(referenceKey, out referenced) && referenced != null)
                         break;
@@ -416,82 +418,5 @@ internal sealed class ResourcesEndpoint(
                 Add(modal);
         }
         return seen;
-    }
-
-    /// <summary>
-    /// App dictionary, its merged dictionaries, then the presented pages' resources — each with
-    /// the XAML file the updater should patch: the dictionary's Source, or for inline page
-    /// resources the page's own source file.
-    /// </summary>
-    IEnumerable<(string Name, ResourceDictionary Dictionary, string? Source)> AllDictionaries()
-    {
-        if (Application.Current?.Resources is { } appResources)
-        {
-            if (appResources.Keys.Any())
-                yield return ("Application", appResources, appResources.Source?.OriginalString);
-            foreach (var merged in appResources.MergedDictionaries)
-                yield return (MergedName(merged), merged, merged.Source?.OriginalString);
-        }
-
-        foreach (var page in PresentedPages())
-        {
-            if (!page.Resources.Keys.Any())
-                continue;
-            string? pageSource = null;
-            try { pageSource = Microsoft.Maui.VisualDiagnostics.GetSourceInfo(page)?.SourceUri?.ToString(); }
-            catch { /* diagnostics may be off */ }
-            yield return ($"Page · {page.GetType().Name}", page.Resources,
-                page.Resources.Source?.OriginalString ?? pageSource);
-        }
-    }
-
-    /// <summary>Every page that may carry resources right now: the root, whatever it currently
-    /// presents (Shell/NavigationPage/tabs), and the modal stack.</summary>
-    IEnumerable<Page> PresentedPages()
-    {
-        var seen = new HashSet<Page>();
-
-        void Add(Page? page)
-        {
-            if (page == null || !seen.Add(page))
-                return;
-            switch (page)
-            {
-                case Shell shell:
-                    Add(shell.CurrentPage);
-                    break;
-                case NavigationPage navigation:
-                    Add(navigation.CurrentPage);
-                    break;
-                case FlyoutPage flyout:
-                    Add(flyout.Detail);
-                    break;
-                case TabbedPage tabbed:
-                    Add(tabbed.CurrentPage);
-                    break;
-            }
-        }
-
-        foreach (var root in inspectors.Current?.Roots ?? [])
-        {
-            if (root is not Page page)
-                continue;
-            Add(page);
-            IReadOnlyList<Page>? modals = null;
-            try { modals = page.Navigation?.ModalStack; }
-            catch { /* navigation may be unavailable mid-teardown */ }
-            foreach (var modal in modals ?? [])
-                Add(modal);
-        }
-
-        return seen;
-    }
-
-    static string MergedName(ResourceDictionary dictionary)
-    {
-        var source = dictionary.Source?.OriginalString;
-        if (string.IsNullOrEmpty(source))
-            return dictionary.GetType() != typeof(ResourceDictionary) ? dictionary.GetType().Name : "Merged";
-        return source.Split(';')[0].TrimStart('/');
     }
 }

@@ -128,6 +128,20 @@ internal static class ApiRoutes
         public const string Action = "/api/broadcast/action";
     }
 
+    public static class Cookbook
+    {
+        public const string Catalog = "/api/cookbook";
+        public const string Open = "/api/cookbook/open";
+        public const string Preview = "/api/cookbook/preview";
+        public const string State = "/api/cookbook/state";
+        public const string Focus = "/api/cookbook/focus";
+    }
+
+    public static class Theme
+    {
+        public const string State = "/api/theme";
+    }
+
     public static class Measure
     {
         public const string Compute = "/api/measure";

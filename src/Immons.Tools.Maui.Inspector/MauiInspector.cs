@@ -97,6 +97,21 @@ public static class MauiInspector
         }
     }
 
+    /// <summary>
+    /// Opens the design cookbook: a page listing the app's styles, controls, colors, fonts,
+    /// images and templates as live samples (also reachable from the web panel and the overlay's ⋯ row).
+    /// </summary>
+    public static Task ShowCookbook() => OnMainThread(() => InspectorServices.Current.Cookbook.OpenAsync(null));
+
+    /// <summary>Closes the design cookbook page when it is open.</summary>
+    public static Task HideCookbook() => OnMainThread(InspectorServices.Current.Cookbook.CloseAsync);
+
+    static Task OnMainThread(Func<Task> action)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        return dispatcher == null || !dispatcher.IsDispatchRequired ? action() : dispatcher.DispatchAsync(action);
+    }
+
     /// <summary>Opens the inspector with the given element selected.</summary>
     public static void Inspect(VisualElement element)
     {

@@ -24,7 +24,10 @@ internal sealed class InspectorServices(
     INetworkInterceptor interceptor,
     ISyncTracker sync,
     IAppliedExpressions expressions,
-    IPropertyCollector properties)
+    IPropertyCollector properties,
+    IResourceScopes resourceScopes,
+    ICookbookCatalog cookbookCatalog,
+    ICookbookHost cookbook)
 {
     static InspectorServices? _current;
 
@@ -68,4 +71,10 @@ internal sealed class InspectorServices(
     public IAppliedExpressions Expressions { get; } = expressions;
 
     public IPropertyCollector Properties { get; } = properties;
+
+    public IResourceScopes ResourceScopes { get; } = resourceScopes;
+
+    public ICookbookCatalog CookbookCatalog { get; } = cookbookCatalog;
+
+    public ICookbookHost Cookbook { get; } = cookbook;
 }

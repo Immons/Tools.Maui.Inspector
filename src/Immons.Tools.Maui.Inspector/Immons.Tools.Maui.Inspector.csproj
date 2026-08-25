@@ -37,6 +37,11 @@
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 	</ItemGroup>
 
+	<!-- Build targets imported by consuming apps: the cookbook's image-source manifest. -->
+	<ItemGroup>
+		<None Include="build\Immons.Tools.Maui.Inspector.targets" Pack="true" PackagePath="build\;buildTransitive\" />
+	</ItemGroup>
+
 	<!-- Web inspector client (served from memory by RemoteServer).
 	     MauiCss would embed the .css a second time — remove it from that glob. -->
 	<ItemGroup>

@@ -194,6 +194,22 @@ public sealed class XamlPatcher
         var state = _states.TryGetValue(file, out var existing) ? existing : _states[file] = new FileState();
         state.OriginalText ??= text;
 
+        // "{inspector:Adaptive …}" from the panel's ⋔ editor: the placeholder prefix becomes
+        // whatever prefix this file declares for the Extensions namespace (declared on the
+        // root when missing), so the expression compiles.
+        if (!change.Remove && change.Value.Contains("{inspector:", StringComparison.Ordinal))
+        {
+            var ensured = EnsureXmlnsForNamespace(text,
+                "Immons.Tools.Maui.Inspector.Extensions", "Immons.Tools.Maui.Inspector.Extensions",
+                out var extensionsPrefix, out var xmlnsMessage, out var xmlnsAt);
+            if (ensured == null)
+                return Fail($"{relativePath}: {xmlnsMessage}");
+            if (!ReferenceEquals(ensured, text))
+                state.RecordEdit(xmlnsAt, 0, ensured.Length - text.Length);
+            text = ensured;
+            change = change with { Value = change.Value.Replace("{inspector:", "{" + extensionsPrefix + ":") };
+        }
+
         string? patched;
         string message;
         string report;

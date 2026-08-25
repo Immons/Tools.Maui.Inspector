@@ -1,16 +1,17 @@
-// Top-level views: Inspector (tree + properties), full-screen Network (requests + mocks),
-// Logs, and Devices (multi-device targets). Inspector-only tools hide elsewhere.
+// Top-level views: Inspector (tree + properties), Cookbook (style gallery), full-screen
+// Network (requests + mocks), Logs, and Devices (multi-device targets). Inspector-only tools hide elsewhere.
 function showView(name) {
   activeView = name;
   // Views are linkable: /#network, /#logs, /#devices (also used for docs screenshots).
   if (location.hash !== '#' + name)
     history.replaceState(null, '', '#' + name);
-  for (const v of ['inspector', 'network', 'logs', 'devices']) {
+  for (const v of ['inspector', 'cookbook', 'network', 'logs', 'devices']) {
     document.getElementById('view-' + v).hidden = v !== name;
     document.getElementById('nav-' + v).classList.toggle('active', v === name);
   }
   document.getElementById('globalbar').hidden = name !== 'inspector';
   if (name === 'network') refreshNetworkView();
+  else if (name === 'cookbook') showCookbook();
   else if (name === 'logs') loadLogs();
   else if (name === 'devices') renderMirrors();
 }
@@ -35,7 +36,7 @@ function refreshNetworkView() {
 // Open the view named in the URL hash on load.
 document.addEventListener('DOMContentLoaded', () => {
   const name = location.hash.replace('#', '');
-  if (['inspector', 'network', 'logs', 'devices'].includes(name) && name !== 'inspector')
+  if (['inspector', 'cookbook', 'network', 'logs', 'devices'].includes(name) && name !== 'inspector')
     showView(name);
   if (name === 'mocks') { showView('network'); showNetworkSub('mocks'); }
 });

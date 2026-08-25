@@ -10,6 +10,7 @@ internal sealed class PanelToolsBar : Grid
     readonly Button _xaml;
     readonly Button _perf;
     readonly Button _slow;
+    readonly Button _cookbook;
     readonly Label _perfOut;
 
     IDispatcher? _dispatcher;
@@ -17,6 +18,9 @@ internal sealed class PanelToolsBar : Grid
 
     /// <summary>Debug paint lives on the window inspector, so it is raised as an event.</summary>
     public event Action<bool>? DebugPaintToggled;
+
+    /// <summary>The design cookbook page was requested; the window inspector hides the panel and opens it.</summary>
+    public event Action? CookbookRequested;
 
     public PanelToolsBar()
     {
@@ -50,11 +54,15 @@ internal sealed class PanelToolsBar : Grid
             UpdateVisuals();
         };
 
+        _cookbook = Theme.MakeButton("📚 Cookbook");
+        _cookbook.Clicked += (_, _) => CookbookRequested?.Invoke();
+
         _perfOut = Theme.MakeLabel("", Theme.TextSecondary, Theme.FontSizeSmall);
         _perfOut.VerticalOptions = LayoutOptions.Center;
 
         ColumnDefinitions =
         [
+            new ColumnDefinition(GridLength.Auto),
             new ColumnDefinition(GridLength.Auto),
             new ColumnDefinition(GridLength.Auto),
             new ColumnDefinition(GridLength.Auto),
@@ -70,9 +78,10 @@ internal sealed class PanelToolsBar : Grid
         this.Add(_xaml, 1);
         this.Add(_perf, 2);
         this.Add(_slow, 3);
-        this.Add(_perfOut, 4);
+        this.Add(_cookbook, 4);
+        this.Add(_perfOut, 5);
 
-        foreach (var button in new[] { _guides, _xaml, _perf, _slow })
+        foreach (var button in new[] { _guides, _xaml, _perf, _slow, _cookbook })
             button.FontSize = Theme.FontSizeSmall;
 
         UpdateVisuals();

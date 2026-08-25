@@ -73,6 +73,7 @@ function renderResourceRow(entry) {
     input.classList.toggle('bad', !r.ok);
     markRecorded(input, r);
     if (r.ok && swatch) swatch.style.background = input.value;
+    if (r.ok) cookbookOnEdit();
   };
   row.appendChild(input);
   return row;
@@ -101,6 +102,7 @@ function renderSetterRow(styleEntry, setter) {
     })).json();
     input.classList.toggle('bad', !r.ok);
     markRecorded(input, r);
+    if (r.ok) cookbookOnEdit();
   };
   row.appendChild(input);
   return row;
@@ -151,6 +153,7 @@ function renderSetterResourceRow(setter) {
     })).json();
     input.classList.toggle('bad', !r.ok);
     markRecorded(input, r);
+    if (r.ok) cookbookOnEdit();
   };
   row.appendChild(input);
   return row;

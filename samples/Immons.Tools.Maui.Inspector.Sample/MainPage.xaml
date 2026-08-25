@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ins="clr-namespace:Immons.Tools.Maui.Inspector.Extensions;assembly=Immons.Tools.Maui.Inspector.Extensions"
              x:Class="SampleApp.MainPage">
 
     <ContentPage.Resources>
@@ -30,6 +31,16 @@
                 Text="Long-press anywhere (800 ms) to inspect the element under your finger."
                 FontSize="14"
                 TextColor="#666666" />
+
+            <!-- {ins:Adaptive}: one value per idiom AND platform in a single line — what
+                 nested OnIdiom/OnPlatform needs a dozen lines for. The inspector shows the
+                 expression as the value's origin and its ⋔ editor edits the entries live. -->
+            <Label
+                x:Name="AdaptiveLabel"
+                Text="Adaptive margin: phones 8, iOS phones 16, tablets 24"
+                FontSize="13"
+                TextColor="#5B5470"
+                Margin="{ins:Adaptive Default='0', Phone='8,0', PhoneIOS='16,0', Tablet='24,0'}" />
 
             <Label
                 x:Name="WebServerLabel"

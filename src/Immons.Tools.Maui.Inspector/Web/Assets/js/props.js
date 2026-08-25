@@ -1,8 +1,22 @@
 // Property panel: sections, editors, layout explorer, filter.
 
+// Set while the cookbook's property popup is open: the sheet renders there, own properties
+// first with the inherited sections folded — the same editors, the same apply pipeline.
+let propsTarget = null;
+
+function isOwnSection(s) {
+  return s.title.endsWith(' properties') && s.title !== 'All properties';
+}
+
+function arrangeForCookbook(sections) {
+  const own = sections.filter(isOwnSection);
+  if (!own.length) return sections;
+  return own.concat(sections.filter(s => !isOwnSection(s)).map(s => ({ ...s, folded: true })));
+}
+
 async function loadProps(id, keepScroll) {
   if (typeof refreshXamlPreview === 'function') refreshXamlPreview();
-  const el = document.getElementById('props');
+  const el = propsTarget || document.getElementById('props');
   // Scroll survives selection changes too — comparing the same section across elements
   // is the common flow; the browser clamps when the new list is shorter.
   const scroll = el.scrollTop;
@@ -44,15 +58,17 @@ async function loadProps(id, keepScroll) {
   if (data.layout)
     el.appendChild(renderLayoutExplorer(data.layout));
 
-  for (const s of data.sections) {
+  const sections = propsTarget ? arrangeForCookbook(data.sections) : data.sections;
+  for (const s of sections) {
     const table = document.createElement('table');
     for (const row of s.rows) table.appendChild(renderPropRow(id, s.title, row));
 
     let sec;
-    if (s.group) {
-      // Grouped sections collapse; the big "All properties" starts closed.
+    if (s.group || s.folded) {
+      // Grouped sections collapse; the big "All properties" — and every inherited section in
+      // the cookbook popup — starts closed.
       sec = document.createElement('details');
-      if (s.group !== 'allprops') sec.open = true;
+      if (s.group !== 'allprops' && !s.folded) sec.open = true;
       const sum = document.createElement('summary');
       sum.appendChild(Object.assign(document.createElement('h2'), { textContent: s.title }));
       sec.appendChild(sum);
@@ -251,7 +267,7 @@ function renderPropRow(id, section, row) {
 // the device gets its matching entry live, XAML gets the expression verbatim.
 // Parses "{OnPlatform iOS=…, Default=…}" back into { mode, values } for pre-filling the editor.
 function parseDeviceExpr(expr) {
-  const m = /^\{(OnPlatform|OnIdiom)\s+([\s\S]+)\}$/.exec((expr || '').trim());
+  const m = /^\{(?:\w+:)?(OnPlatform|OnIdiom|Adaptive)\s+([\s\S]+)\}$/.exec((expr || '').trim());
   if (!m) return null;
   const out = { mode: m[1], values: {} };
   const s = m[2];
@@ -284,7 +300,24 @@ function toggleDeviceEditor(tr, id, section, row) {
   if (next?.classList?.contains('devrow')) { next.remove(); return; }
   document.querySelectorAll('.devrow').forEach(d => d.remove());
 
-  const existing = parseDeviceExpr(row.expr);
+  let existing = parseDeviceExpr(row.expr);
+  // A nested "{OnIdiom Phone={OnPlatform …}}" (the package-free fallback shape) opens
+  // as the Adaptive mode with the entries flattened back into idiom×platform fields.
+  if (existing && existing.mode === 'OnIdiom'
+      && Object.values(existing.values).some(v => /^\{(?:\w+:)?OnPlatform/.test(v))) {
+    const flat = {};
+    for (const [k, v] of Object.entries(existing.values)) {
+      const inner = parseDeviceExpr(v);
+      if (inner && inner.mode === 'OnPlatform' && (k === 'Phone' || k === 'Tablet')) {
+        if (inner.values.iOS !== undefined) flat[k + 'IOS'] = inner.values.iOS;
+        if (inner.values.Android !== undefined) flat[k + 'Android'] = inner.values.Android;
+        if (inner.values.Default !== undefined) flat[k] = inner.values.Default;
+      } else {
+        flat[k] = v;
+      }
+    }
+    existing = { mode: 'Adaptive', values: flat };
+  }
 
   const sub = document.createElement('tr');
   sub.className = 'devrow';
@@ -294,7 +327,7 @@ function toggleDeviceEditor(tr, id, section, row) {
   wrap.className = 'devedit';
 
   const mode = document.createElement('select');
-  for (const m of ['default', 'OnPlatform', 'OnIdiom']) {
+  for (const m of ['default', 'OnPlatform', 'OnIdiom', 'Adaptive']) {
     const o = document.createElement('option');
     o.value = o.textContent = m;
     if (existing && existing.mode === m) o.selected = true;
@@ -310,7 +343,9 @@ function toggleDeviceEditor(tr, id, section, row) {
     for (const k in inputs) delete inputs[k];
     const keys = mode.value === 'default' ? ['Value']
       : mode.value === 'OnPlatform' ? ['Default', 'iOS', 'Android', 'WinUI']
-      : ['Default', 'Phone', 'Tablet', 'Desktop'];
+      : mode.value === 'Adaptive'
+        ? ['Default', 'Phone', 'PhoneIOS', 'PhoneAndroid', 'Tablet', 'TabletIOS', 'TabletAndroid', 'Desktop']
+        : ['Default', 'Phone', 'Tablet', 'Desktop'];
     const preset = existing && existing.mode === mode.value ? existing.values : null;
     for (const key of keys) {
       const label = document.createElement('label');
@@ -343,7 +378,18 @@ function toggleDeviceEditor(tr, id, section, row) {
         .filter(([, i]) => i.value.trim() !== '')
         .map(([k, i]) => k + '=' + quote(i.value.trim()));
       if (!parts.length) return;
-      value = '{' + mode.value + ' ' + parts.join(', ') + '}';
+      if (mode.value === 'Adaptive' && !window.adaptiveAvailable) {
+        // The app does not reference the Extensions package — the same fields compose
+        // into nested inline OnIdiom/OnPlatform, which compiles with no extra package.
+        value = composeNestedAdaptive(inputs, quote);
+        if (!value) return;
+      } else {
+        // Adaptive lives in the Extensions package's xmlns — the "inspector:" placeholder
+        // prefix is rewritten by the XAML Updater to whatever prefix the file declares
+        // (declaring it on the root when missing).
+        const name = mode.value === 'Adaptive' ? 'inspector:Adaptive' : mode.value;
+        value = '{' + name + ' ' + parts.join(', ') + '}';
+      }
     }
     apply(id, section, row.name, value, applyBtn, true);
   };
@@ -382,6 +428,9 @@ async function apply(id, section, name, value, control, refresh) {
   control.classList.toggle('bad', !data.ok);
   if (data.ok)
     mirrorApply(section, name, value);
+  // Edited from the cookbook's popup: its capture and the card re-capture right away.
+  if (data.ok && propsTarget)
+    cookbookOnEdit();
   if (data.ok && data.writeSeq && syncConnected)
     watchWrite(control, data.writeSeq);
   // Picker/checkbox edits (style, enums…) often change other rows — reload them in place.
@@ -454,4 +503,28 @@ async function watchWrite(control, seq) {
     }
   }
   state.remove();   // no ack (older updater?) — don't pretend either way
+}
+
+// The Adaptive fields expressed without the Extensions package: per-idiom entries whose
+// platform variants nest an inline OnPlatform — "{OnIdiom Phone={OnPlatform iOS='16,0',
+// Android='8,0'}, Tablet='24,0', Default='0'}".
+function composeNestedAdaptive(inputs, quote) {
+  const v = (k) => (inputs[k] ? inputs[k].value.trim() : '');
+  const parts = [];
+  for (const base of ['Phone', 'Tablet']) {
+    const ios = v(base + 'IOS');
+    const droid = v(base + 'Android');
+    if (ios || droid) {
+      const inner = [];
+      if (ios) inner.push('iOS=' + quote(ios));
+      if (droid) inner.push('Android=' + quote(droid));
+      if (v(base)) inner.push('Default=' + quote(v(base)));
+      parts.push(base + '={OnPlatform ' + inner.join(', ') + '}');
+    } else if (v(base)) {
+      parts.push(base + '=' + quote(v(base)));
+    }
+  }
+  if (v('Desktop')) parts.push('Desktop=' + quote(v('Desktop')));
+  if (v('Default')) parts.push('Default=' + quote(v('Default')));
+  return parts.length ? '{OnIdiom ' + parts.join(', ') + '}' : null;
 }

@@ -58,6 +58,7 @@ async function switchDevice(base) {
   await refreshAll();
   showVersion();
   if (!document.getElementById('resback').hidden) loadResources();
+  cookbookReset();
 }
 
 refreshDevicePick();   // populate the dropdown right away — the scan is quick and async

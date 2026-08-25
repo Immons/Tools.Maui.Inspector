@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:SampleApp.Controls">
+
+    <!-- Design cookbook recipes: a DataTemplate keyed "Cookbook.<Section>.<Name>" becomes a tile
+         with exactly this content, in a section of its own — real markup, hot-reloadable,
+         editable from the inspector with XAML write-back like any page. -->
+
+    <DataTemplate x:Key="Cookbook.Buttons.Primary and secondary">
+        <HorizontalStackLayout Spacing="8">
+            <Button Text="Save changes" Style="{StaticResource PrimaryButton}" />
+            <Button Text="Cancel" Style="{StaticResource SecondaryButton}" />
+        </HorizontalStackLayout>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Cookbook.Cards.Product">
+        <Border Style="{StaticResource CardStyle}">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" RowDefinitions="Auto,Auto">
+                <Image Source="dotnet_bot.png" WidthRequest="48" HeightRequest="48" Grid.RowSpan="2" Aspect="AspectFit" />
+                <Label Grid.Column="1" Text="Product name" Style="{StaticResource TitleAccent}" />
+                <Label Grid.Column="1" Grid.Row="1" Text="Short description in the caption style" Style="{StaticResource Caption}" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Cookbook.Badges.Status">
+        <HorizontalStackLayout Spacing="8">
+            <controls:PillBadge Text="New" />
+            <controls:PillBadge Text="Sale" Tint="#E8A33D" />
+            <controls:PillBadge Text="Sold out" Tint="#9BA0AE" />
+        </HorizontalStackLayout>
+    </DataTemplate>
+
+</ResourceDictionary>
