@@ -27,7 +27,16 @@ internal sealed class InspectorServices(
     IPropertyCollector properties,
     IResourceScopes resourceScopes,
     ICookbookCatalog cookbookCatalog,
-    ICookbookHost cookbook)
+    ICookbookHost cookbook,
+    IInstanceTracker tracker,
+    ITrackedInstances trackedInstances,
+    ISnapshotRunner snapshots,
+    IMemoryTimeline memory,
+    IHeapDumpRequests heapDumps,
+    INavigationLedger ledger,
+    INavigationWatcher navigation,
+    ILeakNotifier leaks,
+    IServiceLifetimes lifetimes)
 {
     static InspectorServices? _current;
 
@@ -77,4 +86,22 @@ internal sealed class InspectorServices(
     public ICookbookCatalog CookbookCatalog { get; } = cookbookCatalog;
 
     public ICookbookHost Cookbook { get; } = cookbook;
+
+    public IInstanceTracker Tracker { get; } = tracker;
+
+    public ITrackedInstances TrackedInstances { get; } = trackedInstances;
+
+    public ISnapshotRunner Snapshots { get; } = snapshots;
+
+    public IMemoryTimeline Memory { get; } = memory;
+
+    public IHeapDumpRequests HeapDumps { get; } = heapDumps;
+
+    public INavigationLedger Ledger { get; } = ledger;
+
+    public INavigationWatcher Navigation { get; } = navigation;
+
+    public ILeakNotifier Leaks { get; } = leaks;
+
+    public IServiceLifetimes Lifetimes { get; } = lifetimes;
 }

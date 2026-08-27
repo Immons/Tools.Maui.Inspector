@@ -11,6 +11,7 @@ internal sealed class PanelToolsBar : Grid
     readonly Button _perf;
     readonly Button _slow;
     readonly Button _cookbook;
+    readonly Button _memory;
     readonly Label _perfOut;
 
     IDispatcher? _dispatcher;
@@ -21,6 +22,9 @@ internal sealed class PanelToolsBar : Grid
 
     /// <summary>The design cookbook page was requested; the window inspector hides the panel and opens it.</summary>
     public event Action? CookbookRequested;
+
+    /// <summary>The Memory pane was requested; the panel swaps it in for the tree / properties.</summary>
+    public event Action? MemoryRequested;
 
     public PanelToolsBar()
     {
@@ -57,11 +61,15 @@ internal sealed class PanelToolsBar : Grid
         _cookbook = Theme.MakeButton("📚 Cookbook");
         _cookbook.Clicked += (_, _) => CookbookRequested?.Invoke();
 
+        _memory = Theme.MakeButton("🧠 Mem");
+        _memory.Clicked += (_, _) => MemoryRequested?.Invoke();
+
         _perfOut = Theme.MakeLabel("", Theme.TextSecondary, Theme.FontSizeSmall);
         _perfOut.VerticalOptions = LayoutOptions.Center;
 
         ColumnDefinitions =
         [
+            new ColumnDefinition(GridLength.Auto),
             new ColumnDefinition(GridLength.Auto),
             new ColumnDefinition(GridLength.Auto),
             new ColumnDefinition(GridLength.Auto),
@@ -79,9 +87,10 @@ internal sealed class PanelToolsBar : Grid
         this.Add(_perf, 2);
         this.Add(_slow, 3);
         this.Add(_cookbook, 4);
-        this.Add(_perfOut, 5);
+        this.Add(_memory, 5);
+        this.Add(_perfOut, 6);
 
-        foreach (var button in new[] { _guides, _xaml, _perf, _slow, _cookbook })
+        foreach (var button in new[] { _guides, _xaml, _perf, _slow, _cookbook, _memory })
             button.FontSize = Theme.FontSizeSmall;
 
         UpdateVisuals();

@@ -6,6 +6,11 @@ public partial class MainPage : ContentPage
 {
 	int _count;
 	bool _autoShown;
+	bool _leaked;
+	bool _overlaid;
+
+	/// <summary>Parked between screens on purpose: bound to the overlay while it is up, kept here after.</summary>
+	readonly LeakDemo.SharedFilterState _sharedFilter = new();
 
 	public MainPage()
 	{
@@ -112,6 +117,47 @@ public partial class MainPage : ContentPage
 		Immons.Tools.Maui.Inspector.MauiInspector.Show();
 	}
 
+	async void OnLeakClicked(object? sender, EventArgs e) => await Navigation.PushAsync(new LeakDemo.LeakyPage());
+
+	/// <summary>
+	/// The overlay case: a layer added to this page and removed again — never a Page, so the
+	/// inspector only learns about it because the app reports it.
+	/// </summary>
+	async void OnOverlayClicked(object? sender, EventArgs e) => await ShowAndHideOverlays(2);
+
+	async Task ShowAndHideOverlays(int count)
+	{
+		// A generic host page too: the ledger must name it after what it shows, not after itself.
+		await Navigation.PushAsync(new LeakDemo.PopupHostPage());
+		await Task.Delay(500);
+		await Navigation.PopAsync();
+
+		for (var i = 0; i < count; i++)
+		{
+			var overlay = new LeakDemo.LeakyOverlay(_sharedFilter);
+			RootStack.Add(overlay);
+			Immons.Tools.Maui.Inspector.Navigation.ReportPushed(overlay, $"LeakyOverlay #{overlay.Number}");
+			await Task.Delay(700);
+			RootStack.Remove(overlay);
+			Immons.Tools.Maui.Inspector.Navigation.ReportPopped(overlay);
+			await Task.Delay(300);
+		}
+	}
+
+	/// <summary>Push and pop a few leaky pages in a row — what a Memory snapshot should then flag.</summary>
+	async void OnLeakBatchClicked(object? sender, EventArgs e) => await PushAndPopLeakyPages(3);
+
+	async Task PushAndPopLeakyPages(int count)
+	{
+		for (var i = 0; i < count; i++)
+		{
+			await Navigation.PushAsync(new LeakDemo.LeakyPage());
+			await Task.Delay(400);
+			await Navigation.PopAsync();
+			await Task.Delay(200);
+		}
+	}
+
 	protected override void OnAppearing()
 	{
 		base.OnAppearing();
@@ -125,6 +171,20 @@ public partial class MainPage : ContentPage
 			_autoShown = true;
 			Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(2), () =>
 				Immons.Tools.Maui.Inspector.MauiInspector.Inspect(CardBorder));
+		}
+
+		// Test hook: HV_OVERLAY=n shows and hides n reported overlays after startup.
+		if (!_overlaid && int.TryParse(Environment.GetEnvironmentVariable("HV_OVERLAY"), out var overlays) && overlays > 0)
+		{
+			_overlaid = true;
+			Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(3), async () => await ShowAndHideOverlays(overlays));
+		}
+
+		// Test hook: HV_LEAK=n pushes and pops n leaky pages after startup (Memory view smoke tests).
+		if (!_leaked && int.TryParse(Environment.GetEnvironmentVariable("HV_LEAK"), out var leaks) && leaks > 0)
+		{
+			_leaked = true;
+			Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(2), async () => await PushAndPopLeakyPages(leaks));
 		}
 	}
 }

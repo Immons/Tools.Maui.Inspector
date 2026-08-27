@@ -23,6 +23,9 @@ public static class MauiProgram
 			{
 				options.LongPressDuration = TimeSpan.FromMilliseconds(800);
 				options.EnableWebServer = true;
+				// Test hook: HV_PORT pins the panel's port (the smoke tests use one outside the scan range).
+				if (int.TryParse(Environment.GetEnvironmentVariable("HV_PORT"), out var port))
+					options.WebServerPort = port;
 				options.ShakeToOpen = true;
 				options.SeedRulesAsset = "inspector-rules.json";
 				// options.Cookbook.IncludedControls.Add("SampleApp.Controls.");                 // render only the design system (namespace or XAML folder prefix)

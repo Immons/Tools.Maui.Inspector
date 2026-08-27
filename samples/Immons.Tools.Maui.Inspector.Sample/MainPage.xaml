@@ -119,6 +119,15 @@
                 Text="Open inspector"
                 Clicked="OnOpenInspectorClicked"
                 HorizontalOptions="Fill" />
+
+            <!-- Memory view demo: pages that subscribe to a static event and never let go. -->
+            <HorizontalStackLayout Spacing="10">
+                <Button x:Name="LeakBtn" AutomationId="LeakBtn" Text="🧠 Push a leaky page" Clicked="OnLeakClicked" />
+                <Button x:Name="LeakBatchBtn" AutomationId="LeakBatchBtn" Text="Push &amp; pop ×3" Clicked="OnLeakBatchClicked"
+                        BackgroundColor="Transparent" TextColor="#512BD4" BorderColor="#512BD4" BorderWidth="1" />
+                <Button x:Name="OverlayBtn" AutomationId="OverlayBtn" Text="Overlay ×2" Clicked="OnOverlayClicked"
+                        BackgroundColor="Transparent" TextColor="#512BD4" BorderColor="#512BD4" BorderWidth="1" />
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 

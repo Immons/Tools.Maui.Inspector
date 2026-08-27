@@ -1,0 +1,65 @@
+<Project>
+  <!--
+    Heap dumps for the Memory view. dotnet-gcdump reaches a Mono app (Android, iOS, Mac Catalyst)
+    only through a diagnostic port the build configured, with the runtime's diagnostics component
+    in the package. Referencing this package turns both on for Debug builds — the very properties
+    the SDKs document for dotnet-trace / dotnet-gcdump — so the panel's "Heap dump" button works
+    without any setup. Windows (CoreCLR) needs nothing: its default diagnostic port is always there.
+
+    Opt out with <MauiInspectorDiagnostics>false</MauiInspectorDiagnostics>. Each app gets its own
+    port, derived from its identity, so two apps can be dumped side by side on one machine
+    (maui-inspector-sync starts one router per app and reads the port from the app itself);
+    <MauiInspectorDiagnosticPort> pins it to a value of your own.
+
+    Allocation recording (the panel's ⏺ Allocations) needs Mono started with the profiler's
+    "alloc" option in MONO_DIAGNOSTICS: it takes the inlined allocation fast path away, and no
+    session can turn that on later. It costs nothing until a recording actually runs, and a Debug
+    build pays far more for the interpreter and hot reload than for this, so it is on by default
+    and Release never sees it. <MauiInspectorAllocationTracking>false</MauiInspectorAllocationTracking>
+    turns it off (the panel then says so instead of recording nothing).
+  -->
+  <PropertyGroup>
+    <_MauiInspectorPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiInspectorPlatform>
+    <_MauiInspectorDiagnosticsOn Condition="'$(Configuration)' == 'Debug' And '$(MauiInspectorDiagnostics)' != 'false' And ('$(_MauiInspectorPlatform)' == 'android' Or '$(_MauiInspectorPlatform)' == 'ios' Or '$(_MauiInspectorPlatform)' == 'maccatalyst')">true</_MauiInspectorDiagnosticsOn>
+    <!-- A stable port per app: the identity's hash over the even numbers 9010-9088, so two apps on
+         one machine never share one and every build of the same app keeps the same number. Even
+         only, because the Android router listens on port + 1 — an odd number is never another
+         app's port. 9000-9009 stay free for a hand-picked <MauiInspectorDiagnosticPort>. -->
+    <_MauiInspectorIdentity Condition="'$(_MauiInspectorIdentity)' == ''">$(ApplicationId)</_MauiInspectorIdentity>
+    <_MauiInspectorIdentity Condition="'$(_MauiInspectorIdentity)' == ''">$(AssemblyName)</_MauiInspectorIdentity>
+    <_MauiInspectorIdentity Condition="'$(_MauiInspectorIdentity)' == ''">$(MSBuildProjectName)</_MauiInspectorIdentity>
+    <_MauiInspectorPortSlot>$([MSBuild]::Modulo($([System.Math]::Abs($([MSBuild]::StableStringHash('$(_MauiInspectorIdentity)')))), 40))</_MauiInspectorPortSlot>
+    <MauiInspectorDiagnosticPort Condition="'$(MauiInspectorDiagnosticPort)' == ''">$([MSBuild]::Add(9010, $([MSBuild]::Multiply($(_MauiInspectorPortSlot), 2))))</MauiInspectorDiagnosticPort>
+  </PropertyGroup>
+
+  <!-- iOS / Mac Catalyst: the SDK reads EnableDiagnostics late enough to derive the port
+       (127.0.0.1:9000, listen, nosuspend) and the app's environment by itself. -->
+  <PropertyGroup Condition="'$(_MauiInspectorDiagnosticsOn)' == 'true'">
+    <EnableDiagnostics>true</EnableDiagnostics>
+    <DiagnosticPort Condition="'$(DiagnosticPort)' == ''">$(MauiInspectorDiagnosticPort)</DiagnosticPort>
+  </PropertyGroup>
+
+  <!-- Android decides AndroidEnableProfiler before package targets are imported, so the derived
+       values are set explicitly: the component, and the port the app connects to — 127.0.0.1,
+       which dotnet-gcdump's "dsrouter android" mode reverses through adb, emulator included. -->
+  <PropertyGroup Condition="'$(_MauiInspectorDiagnosticsOn)' == 'true' And '$(_MauiInspectorPlatform)' == 'android'">
+    <AndroidEnableProfiler>true</AndroidEnableProfiler>
+    <DiagnosticConfiguration Condition="'$(DiagnosticConfiguration)' == ''">127.0.0.1:$(MauiInspectorDiagnosticPort),connect,nosuspend</DiagnosticConfiguration>
+  </PropertyGroup>
+
+  <!-- Allocation tracking: the environment variable Mono reads at startup, baked into the app
+       (Android: the environment file; iOS / Mac Catalyst: the bundler's setenv option). -->
+  <PropertyGroup Condition="'$(_MauiInspectorDiagnosticsOn)' == 'true' And '$(MauiInspectorAllocationTracking)' != 'false'">
+    <_MauiInspectorAllocationOn>true</_MauiInspectorAllocationOn>
+    <AppBundleExtraOptions Condition="'$(_MauiInspectorPlatform)' != 'android'">$(AppBundleExtraOptions) --setenv=MONO_DIAGNOSTICS=--diagnostic-mono-profiler=alloc</AppBundleExtraOptions>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(_MauiInspectorAllocationOn)' == 'true' And '$(_MauiInspectorPlatform)' == 'android'">
+    <RuntimeEnvironmentVariable Include="MONO_DIAGNOSTICS" Value="--diagnostic-mono-profiler=alloc" />
+  </ItemGroup>
+
+  <!-- A Release build referencing this package would be one Condition away from shipping a diagnostic port. -->
+  <Target Name="MauiInspectorDiagnosticsReleaseWarning" BeforeTargets="Build"
+          Condition="'$(Configuration)' != 'Debug' And '$(MauiInspectorDiagnostics)' != 'false' And '$(TargetFramework)' != ''">
+    <Warning Text="Immons.Tools.Maui.Inspector.Diagnostics is referenced in a $(Configuration) build. It only enables the diagnostic port in Debug; reference it with Condition=&quot;'$(Configuration)' == 'Debug'&quot; to keep it out of release packages entirely." />
+  </Target>
+</Project>

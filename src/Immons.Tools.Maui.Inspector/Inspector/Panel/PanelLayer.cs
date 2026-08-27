@@ -10,6 +10,8 @@ internal sealed class PanelLayer : Border
 {
     readonly PanelHeaderBar _header;
     readonly PanelToolsBar _tools;
+    readonly MemoryPane _memoryPane;
+    bool _treeTab;
     readonly BreadcrumbBar _breadcrumb;
     readonly PanelDragController _drag;
     readonly TreePane _treePane;
@@ -73,6 +75,7 @@ internal sealed class PanelLayer : Border
         _tools = new PanelToolsBar { IsVisible = false };
         _tools.DebugPaintToggled += on => DebugPaintToggled?.Invoke(on);
         _tools.CookbookRequested += () => CookbookRequested?.Invoke();
+        _tools.MemoryRequested += ToggleMemoryPane;
 
         _breadcrumb = new BreadcrumbBar();
         _breadcrumb.Picked += el => ElementPicked?.Invoke(el, true);
@@ -84,9 +87,12 @@ internal sealed class PanelLayer : Border
         _propsPane.Edited += () => PropertyEdited?.Invoke();
         _propsPane.StructureChanged += () => StructureEdited?.Invoke();
 
+        _memoryPane = new MemoryPane { IsVisible = false };
+
         var contentHost = new Grid().NoSafeArea();
         contentHost.Add(_treePane);
         contentHost.Add(_propsPane);
+        contentHost.Add(_memoryPane);
 
         var dragHandle = BuildDragHandle();
 
@@ -150,9 +156,22 @@ internal sealed class PanelLayer : Border
 
     void ShowTab(bool tree)
     {
+        _treeTab = tree;
+        _memoryPane.IsVisible = false;
         _treePane.IsVisible = tree;
         _propsPane.IsVisible = !tree;
         _header.SetTabVisual(tree);
+    }
+
+    /// <summary>The Memory pane takes the content area; a tab brings the tree / properties back.</summary>
+    void ToggleMemoryPane()
+    {
+        var show = !_memoryPane.IsVisible;
+        _propsPane.IsVisible = !show && !_treeTab;
+        _treePane.IsVisible = !show && _treeTab;
+        _memoryPane.IsVisible = show;
+        if (show)
+            _memoryPane.Render();
     }
 
     static Grid BuildDragHandle()

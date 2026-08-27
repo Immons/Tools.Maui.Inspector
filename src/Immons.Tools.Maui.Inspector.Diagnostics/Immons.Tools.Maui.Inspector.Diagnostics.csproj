@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<RootNamespace>Immons.Tools.Maui.Inspector.Diagnostics</RootNamespace>
+
+		<!-- An MSBuild-only package: nothing to compile, the targets file does the work. -->
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS2008;NU5128</NoWarn>
+
+		<!-- NuGet package -->
+		<IsPackable>true</IsPackable>
+		<PackageId>Immons.Tools.Maui.Inspector.Diagnostics</PackageId>
+		<Title>Immons.Tools.Maui.Inspector.Diagnostics</Title>
+		<Description>Heap dumps for the MAUI Inspector's Memory view. Referencing this package builds Debug Android/iOS apps with .NET's diagnostics component and a diagnostic port, so the panel's "Heap dump" button can hand the whole managed heap to dotnet-gcdump through maui-inspector-sync — every type with counts and sizes, and the paths that keep a leaked page alive. Nothing to configure; never active in Release.</Description>
+		<PackageTags>maui;dotnet-maui;inspector;devtools;memory;leaks;gcdump;diagnostics;android;ios</PackageTags>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageOutputPath>$(MSBuildThisFileDirectory)..\..\nugets\</PackageOutputPath>
+	</PropertyGroup>
+
+	<!-- Consuming projects import this automatically (build/ for direct, buildTransitive/ for indirect references). -->
+	<ItemGroup>
+		<None Include="build\Immons.Tools.Maui.Inspector.Diagnostics.targets" Pack="true" PackagePath="build\;buildTransitive\" />
+	</ItemGroup>
+
+	<!-- The dependency: the Memory view, its endpoints and the hand-off queue live in the inspector itself. -->
+	<ItemGroup>
+		<ProjectReference Include="..\Immons.Tools.Maui.Inspector\Immons.Tools.Maui.Inspector.csproj" />
+	</ItemGroup>
+
+</Project>

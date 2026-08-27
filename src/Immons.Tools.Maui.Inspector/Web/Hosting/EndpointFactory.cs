@@ -28,7 +28,7 @@ internal static class EndpointFactory
             new ToggleEndpoint(mainThread, inspectors, xamlChanges),
             new ElementEndpoint(mainThread, inspectors, elements, elementJson, commands, structure, new AutomationIdBinder(elements, inspectors, xamlChanges)),
             new StructureEndpoint(mainThread, InspectorServices.Current.Catalog, structure, inspectors, elements),
-            new BroadcastEndpoint(mainThread, inspectors, InspectorServices.Current.Properties),
+            new BroadcastEndpoint(mainThread, inspectors, InspectorServices.Current.Properties, sync),
             new HistoryEndpoint(mainThread, history, commands),
             new NetworkEndpoint(InspectorServices.Current.Network),
             new MockRulesEndpoint(InspectorServices.Current.NetworkRules, InspectorServices.Current.Recorder),
@@ -42,6 +42,13 @@ internal static class EndpointFactory
                 new Features.Cookbook.Web.CookbookJsonBuilder(InspectorServices.Current.Cookbook, elements),
                 new Features.Cookbook.Web.TilePreviewer(mainThread, InspectorServices.Current.Cookbook)),
             new Features.Cookbook.Web.ThemeEndpoint(mainThread, InspectorServices.Current.Cookbook),
+            new Features.Memory.Web.MemoryEndpoint(InspectorServices.Current.Memory, InspectorServices.Current.Tracker,
+                InspectorServices.Current.TrackedInstances, InspectorServices.Current.HeapDumps, InspectorServices.Current.Snapshots, sync,
+                InspectorServices.Current.Ledger, InspectorServices.Current.Leaks, InspectorServices.Current.Lifetimes),
+            new Features.Memory.Web.MemoryControlEndpoint(mainThread, InspectorServices.Current.Ledger, InspectorServices.Current.Snapshots,
+                InspectorServices.Current.TrackedInstances, InspectorServices.Current.Tracker),
+            new Features.Memory.Web.SnapshotEndpoint(InspectorServices.Current.Snapshots, InspectorServices.Current.HeapDumps),
+            new Features.Memory.Web.HeapDumpEndpoint(InspectorServices.Current.HeapDumps, InspectorServices.Current.Snapshots, sync),
         ];
     }
 }

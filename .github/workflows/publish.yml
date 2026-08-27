@@ -59,6 +59,11 @@ jobs:
           dotnet pack src/Immons.Tools.Maui.Inspector.Extensions/Immons.Tools.Maui.Inspector.Extensions.csproj
           -c Release -o ./artifacts -p:GeneratePackageOnBuild=false
 
+      - name: Pack the heap-dump diagnostics (build-only targets)
+        run: >
+          dotnet pack src/Immons.Tools.Maui.Inspector.Diagnostics/Immons.Tools.Maui.Inspector.Diagnostics.csproj
+          -c Release -o ./artifacts -p:GeneratePackageOnBuild=false
+
       - name: Verify the package carries every target framework
         shell: pwsh
         run: |
@@ -77,7 +82,7 @@ jobs:
             }
           }
           "### Packed TFMs`n`n``$($tfms -join ', ')``" >> $env:GITHUB_STEP_SUMMARY
-          $expectedPackages = @('Immons.Tools.Maui.Inspector', 'Immons.Tools.Maui.Inspector.Persistency', 'Immons.Tools.Maui.Inspector.Sync', 'Immons.Tools.Maui.Inspector.Extensions')
+          $expectedPackages = @('Immons.Tools.Maui.Inspector', 'Immons.Tools.Maui.Inspector.Persistency', 'Immons.Tools.Maui.Inspector.Sync', 'Immons.Tools.Maui.Inspector.Extensions', 'Immons.Tools.Maui.Inspector.Diagnostics')
           foreach ($name in $expectedPackages) {
             if (-not (Get-ChildItem "./artifacts/$name.*.nupkg" -ErrorAction SilentlyContinue)) {
               Write-Error "Missing package: $name"; exit 1

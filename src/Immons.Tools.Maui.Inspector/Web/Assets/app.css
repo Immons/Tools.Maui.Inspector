@@ -399,3 +399,109 @@ input.warn { border-color: var(--measure); }
 #cookzoom span { font-size: 11px; color: var(--text2); width: 38px; text-align: right; font-family: ui-monospace, Menlo, monospace; }
 #cookpropspanel.maximized { width: 96vw; max-height: 94vh; }
 #cookpropspanel.maximized #cookfocuspreview { max-height: 80vh; }
+
+/* Memory view */
+#membar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 4px 0 8px; border-bottom: 1px solid var(--divider); }
+#membar input[type=text] { min-width: 200px; }
+#memDumpBtn.unavailable { opacity: .55; }
+#membar button.unavailable { opacity: .45; cursor: not-allowed; }
+#memstats { display: flex; gap: 16px; align-items: center; padding: 10px 0; flex-wrap: wrap; }
+#memspark { width: 600px; max-width: 100%; height: 60px; background: var(--bg2); border-radius: 6px; }
+#memnumbers { color: var(--text2); font-size: 12px; line-height: 1.7; }
+#memnumbers b { color: var(--text); font-weight: 600; }
+.memsection { margin-top: 14px; }
+.memsection h3 { font-size: 13px; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
+.memsection h4 { font-size: 12px; margin: 10px 0 4px; }
+.memsection h3 button { padding: 1px 8px; font-size: 11px; }
+.memtable th { text-align: left; color: var(--text2); font-weight: 500; font-size: 11px; padding: 2px 10px 2px 0; border-bottom: 1px solid var(--divider); }
+.memtable td { padding: 2px 10px 2px 0; font-size: 12px; white-space: nowrap; }
+.memtable td.num, .memtable th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.memtable th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.memtable th.sortable:hover { color: var(--text); }
+.memtable th.active { color: var(--accent); }
+.dumpbar { display: inline-flex; gap: 10px; align-items: center; margin-left: 12px; font-weight: 400; }
+.dumpbar select { font-size: 11px; padding: 2px 6px; max-width: 320px; }
+.memtable tr.fw td { color: var(--text2); }
+.memtable tr.apptype td.tname { color: var(--accent); font-weight: 600; }
+.memtable tr.pkgtype td.tname { color: #7fb3d5; }
+.allocbar { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px; }
+.allocbar button { padding: 2px 10px; font-size: 11px; }
+.tname { font-family: ui-monospace, Menlo, Consolas, monospace; }
+.delta-up { color: #e08585; }
+.delta-down { color: #7fd48a; }
+.suspect { padding: 5px 0; border-bottom: 1px solid var(--divider); font-size: 12px; }
+.suspect.fw { color: var(--text2); }
+.suspect .stype { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 600; }
+.suspect .skind { color: var(--text2); margin-left: 8px; }
+.suspect .shint { color: var(--measure); margin-left: 8px; }
+.suspect .scost { color: #e08585; font-weight: 600; margin-left: 8px; }
+.suspect.clickable { cursor: pointer; }
+.suspect.clickable:hover { background: rgba(92, 158, 255, .08); }
+.suspect .swhere { color: var(--accent); }
+.pathconn.inside::before { content: '↑ '; }
+.suspect .sfix { margin: 4px 0 0 12px; font-size: 12px; }
+.suspect .sfix summary { cursor: pointer; color: var(--accent); }
+.suspect .sfixline { color: var(--text2); padding: 3px 0 2px 14px; max-width: 900px; }
+.sfooter { padding-top: 6px; }
+.rootpath { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color: var(--text2); padding: 2px 6px 2px 12px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; border-radius: 4px; }
+.rootpath:hover { background: rgba(92, 158, 255, .12); }
+.rootpath.static { cursor: default; }
+.rootpath .parrow { color: var(--divider); padding: 0 5px; }
+.rootkind { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-right: 8px; }
+.rootkind.interop { color: #e05252; }
+.rootkind.static { color: var(--measure); }
+.rootkind.handle { color: #c9a0dc; }
+.rootkind.root { color: var(--text2); }
+.pstep.held { color: var(--text); font-weight: 600; }
+.pstep.app { color: var(--accent); font-weight: 600; }
+.pstep.package { color: #7fb3d5; }
+.pstep.root { color: var(--measure); }
+.pstep.delegate { color: #c9a0dc; }
+.pstep.gap { color: var(--text2); font-style: italic; }
+#pathback { position: fixed; inset: 0; z-index: 55; background: rgba(0, 0, 0, .45);
+            display: flex; align-items: center; justify-content: center; }
+#pathback[hidden] { display: none; }
+#pathpanel { width: min(900px, 94vw); max-height: 84vh; display: flex; flex-direction: column;
+             background: var(--bg); border: 1px solid var(--divider); border-radius: 10px;
+             box-shadow: 0 12px 40px rgba(0, 0, 0, .5); }
+#pathhead { display: flex; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--divider); }
+#pathhead b { font-family: ui-monospace, Menlo, Consolas, monospace; white-space: nowrap; }
+#pathhead .nethint { flex: 1; }
+#pathbody { overflow: auto; padding: 10px 16px 14px; }
+.pathstack { border: 1px solid var(--divider); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; background: var(--bg2); }
+.pathstack.focus { border-color: var(--accent); }
+.pathstackhead { display: flex; gap: 10px; align-items: center; color: var(--text2); font-size: 11px; margin-bottom: 4px; }
+.pathstackhead button { padding: 1px 8px; font-size: 11px; }
+.pathrow { display: grid; grid-template-columns: 24px auto 1fr; gap: 10px; align-items: baseline; padding: 3px 0; }
+.pathnum { color: var(--text2); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+.pathtype { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--text2); word-break: break-all; }
+.pathnote { color: var(--text2); font-size: 11px; }
+.pathnote.fix { color: var(--measure); font-weight: 600; }
+.pathconn { color: var(--divider); font-size: 10px; padding-left: 34px; line-height: 1.1; text-transform: uppercase; letter-spacing: .06em; }
+.pathconn::before { content: '↑ '; }
+.dumpjob { padding: 8px 10px; border: 1px solid var(--divider); border-radius: 8px; background: var(--bg2); margin-bottom: 10px; }
+.dumpjob .dumphead { cursor: pointer; user-select: none; }
+.dumpjob .dumphead .caret { color: var(--text2); display: inline-block; width: 12px; }
+.dumpjob.folded { opacity: .85; }
+.dumpjob.folded:hover { opacity: 1; border-color: var(--accent); }
+.dumpjob.failed { border-color: #e05252; }
+.dumpjob.done { border-color: var(--accent); }
+.memwarn { color: var(--measure); font-size: 12px; padding: 6px 0; }
+.badge { display: inline-block; min-width: 16px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: #e05252; color: #fff; font-size: 10px; line-height: 16px; text-align: center; vertical-align: middle; }
+.badge[hidden] { display: none; }
+.verdict { font-size: 12px; }
+.verdict.alive { color: #e08585; font-weight: 600; }
+.verdict.ok { color: #7fd48a; }
+.verdict.pending { color: var(--measure); }
+.histwrap { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+#memhist { width: 600px; max-width: 100%; height: 120px; background: var(--bg2); border-radius: 6px; }
+#memhistlegend { font-size: 11px; display: flex; flex-direction: column; gap: 2px; }
+.suspect .sholder { color: #e08585; font-size: 12px; padding: 2px 0 0 12px; }
+.pathstack.holders { border-color: #e08585; }
+.newtype { font-size: 10px; color: #7fd48a; border: 1px solid #7fd48a; border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+/* A small label next to a name, anywhere — the suspects' own .skind is scoped to that list. */
+.tag { font-size: 10px; color: var(--text2); border: 1px solid var(--divider); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+.tracebtn { padding: 0 6px; font-size: 11px; opacity: .7; }
+.tracebtn:hover { opacity: 1; }
+#membar select { font-size: 12px; padding: 3px 6px; }

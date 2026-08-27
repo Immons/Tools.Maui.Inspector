@@ -24,6 +24,7 @@
     <button id="nav-cookbook" class="tabbtn" onclick="showView('cookbook')" title="Design cookbook — the app's styles, controls, colors, fonts and images as live samples">📚 Cookbook</button>
     <button id="nav-network" class="tabbtn" onclick="showView('network')" title="HTTP requests, breakpoints, mock rules">🌐 Network</button>
     <button id="nav-logs" class="tabbtn" onclick="showView('logs')" title="ILogger output">📋 Logs</button>
+    <button id="nav-memory" class="tabbtn" onclick="showView('memory')" title="Memory — live readings, leak snapshots, heap dumps">🧠 Memory<span id="membadge" class="badge" hidden></span></button>
     <button id="nav-devices" class="tabbtn" onclick="showView('devices')" title="Multi-device hot reload targets">🖧 Devices</button>
     <span id="globalbar">
       <button id="wysiwygBtn" onclick="toggleWysiwyg()" title="Write applied edits back to the XAML sources (requires maui-inspector-sync)">✎︎ XAML</button>
@@ -120,6 +121,52 @@
   </div>
   <div id="view-logs" class="view fullview" hidden><div id="loglist"></div></div>
 
+  <div id="view-memory" class="view fullview" hidden>
+    <div id="membar">
+      <button id="memTrackBtn" onclick="toggleTracking()" title="Instance tracking: one weak reference per element, view model, handler and platform view. Off means the inspector does no memory work at all — and the snapshots, the ledger and watch mode go with it">⏻ Tracking</button>
+      <button id="memSnapBtn" onclick="runSnapshot()" title="Run several full collections, then list what is still alive although no window uses it">📸 Snapshot</button>
+      <button id="memWatchBtn" onclick="toggleWatch()" title="Watch mode: a snapshot by itself after every page that leaves a window, and a verdict per page in the ledger. Costs a few collections per pop — off by default">👁 Watch</button>
+      <button id="memBaselineBtn" onclick="toggleBaseline()" title="Mark the current state, run your flow, snapshot again: every type then shows what it grew by and per how many repetitions">📌 Baseline</button>
+      <button onclick="forceGc()" title="Two full collections, no snapshot">♻︎ GC</button>
+      <button id="memDumpBtn" onclick="requestHeapDump()" title="Whole managed heap through dotnet-gcdump on the desktop — every type with counts, sizes and paths to the GC roots">🧬 Heap dump</button>
+      <button id="memAllocBtn" onclick="requestAllocRecording(10)" title="Record allocations for 10 s with dotnet-trace on the desktop — which types allocate how much while you use the app">⏺ Allocations</button>
+      <span class="cooksep"></span>
+      <label class="cooklabel"><input type="checkbox" id="memAppOnly" checked onchange="renderMemoryTables()"> app types only</label>
+      <select id="memRole" onchange="renderMemoryTables()" title="Role of the tracked objects">
+        <option value="">all roles</option><option>Element</option><option>BindingContext</option><option>Handler</option><option>PlatformView</option>
+      </select>
+      <input type="text" id="memsearch" placeholder="Filter types…" oninput="renderMemoryTables()">
+      <span class="cooksep"></span>
+      <label class="cooklabel" title="Bisection aid: DisconnectHandlers() on every page that leaves a window — if the suspects vanish, the handlers held the page"><input type="checkbox" id="memBisectHandlers" onchange="setBisection('disconnectHandlersOnPop', this.checked)"> 🧪 disconnect handlers on pop</label>
+      <label class="cooklabel" title="Bisection aid: BindingContext = null on every page that leaves a window — if the suspects vanish, the view model held the page"><input type="checkbox" id="memBisectContext" onchange="setBisection('clearBindingContextOnPop', this.checked)"> 🧪 clear BindingContext on pop</label>
+      <span class="cooksep"></span>
+      <button onclick="exportMemoryMarkdown()" title="Snapshot, ledger and the latest dump as Markdown — for a ticket">⤓ md</button>
+      <button onclick="exportMemoryCsv()" title="The tracked-types table (or the latest dump's types) as CSV">⤓ csv</button>
+      <span id="memhint" class="nethint"></span>
+    </div>
+    <div id="memstats">
+      <canvas id="memspark" width="600" height="60" title="Managed heap (blue) and process memory (amber) over the last minutes"></canvas>
+      <div id="memnumbers"></div>
+    </div>
+    <div id="memsuspects" class="memsection"></div>
+    <div id="memledger" class="memsection"></div>
+    <div id="memhistory" class="memsection"></div>
+    <div id="memrows" class="memsection"></div>
+    <div id="memdumps" class="memsection"></div>
+    <div id="memimages" class="memsection"></div>
+    <div id="mempeers" class="memsection"></div>
+    <div id="pathback" hidden onclick="if (event.target === this) closePathPopup()">
+      <div id="pathpanel">
+        <div id="pathhead">
+          <b id="pathtitle"></b>
+          <span id="pathhint" class="nethint"></span>
+          <button onclick="closePathPopup()" title="Close">✕</button>
+        </div>
+        <div id="pathbody"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="view-cookbook" class="view fullview" hidden>
     <div id="cookbar">
       <button id="cookOpenBtn" onclick="toggleCookbookOnDevice()" title="Push the cookbook page on the device — previews are captured from it">📱 Open on device</button>
@@ -187,6 +234,11 @@
 <script src="/js/cookbookdiff.js"></script>
 <script src="/js/cookbookprops.js"></script>
 <script src="/js/mirrors.js"></script>
+<script src="/js/memoryadvice.js"></script>
+<script src="/js/memory.js"></script>
+<script src="/js/memoryledger.js"></script>
+<script src="/js/memorypaths.js"></script>
+<script src="/js/memorydump.js"></script>
 <script src="/js/diff.js"></script>
 <script src="/js/keyboard.js"></script>
 <script src="/js/connection.js"></script>

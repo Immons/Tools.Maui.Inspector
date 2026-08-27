@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>HeapDumpReaderTests</RootNamespace>
+  </PropertyGroup>
+  <!-- Links the sync tool's heap-dump sources — a plain console runner, no test framework:
+       `dotnet run` dumps its own heap with dotnet-gcdump, reads it back and checks the report.
+       Prints SKIP (exit 0) when dotnet-gcdump is not installed. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\Vendored\DotNetHeapDump\*.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\DiagnosticTools.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\DumpTarget.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\GcDumpReader.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\GcDumpRunner.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\HeapReport.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\RootPaths.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\TypeMatcher.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\ToolInstaller.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\DsRouterProcess.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\ToolRunner.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\AllocationRunner.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\AllocationTally.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\MonoPayload.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.23" />
+  </ItemGroup>
+</Project>

@@ -1,12 +1,15 @@
 using System.Text.Json.Nodes;
 using Immons.Tools.Maui.Inspector.Sync;
+using Immons.Tools.Maui.Inspector.Sync.HeapDumps;
 
 var apps = new List<string>();
 var src = Directory.GetCurrentDirectory();
+var dumps = Path.Combine(Path.GetTempPath(), "maui-inspector", "heapdumps");
 var intervalMs = 1000;
 var fromNow = false;
 var dryRun = false;
 var forwardOnly = false;
+var toolsOnly = false;
 
 for (var i = 0; i < args.Length; i++)
 {
@@ -15,11 +18,20 @@ for (var i = 0; i < args.Length; i++)
         case "forward":
             forwardOnly = true;
             break;
+        case "tools":
+            toolsOnly = true;
+            break;
         case "--app" when i + 1 < args.Length:
             apps.AddRange(args[++i].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(u => u.TrimEnd('/')));
             break;
         case "--src" when i + 1 < args.Length:
             src = Path.GetFullPath(args[++i]);
+            break;
+        case "--dumps" when i + 1 < args.Length:
+            dumps = Path.GetFullPath(args[++i]);
+            break;
+        case "--no-tool-install":
+            DiagnosticTools.AutoInstall = false;
             break;
         case "--interval" when i + 1 < args.Length:
             intervalMs = int.Parse(args[++i]);
@@ -46,6 +58,10 @@ for (var i = 0; i < args.Length; i++)
 
                     maui-inspector-sync forward
 
+                Checking (and installing) the heap-dump tools ahead of the first dump:
+
+                    maui-inspector-sync tools
+
                 It finds inspectors inside connected Android emulators/devices and maps each
                 onto a free host port from the 9295-9309 range — useful when the "natural"
                 port is already taken by e.g. an iOS simulator app.
@@ -53,12 +69,19 @@ for (var i = 0; i < args.Length; i++)
                   --app        Base URL(s) of running web inspectors, comma-separated or repeated
                                (skips scanning). One updater serves every device at once.
                   --src        Root folder that contains the XAML sources (searched recursively).
+                  --dumps      Folder for .gcdump files (default: <temp>/maui-inspector/heapdumps).
+                  --no-tool-install  Never install dotnet-gcdump / dotnet-dsrouter automatically.
                   --interval   Poll interval in milliseconds (default 1000).
                   --from-now   Ignore edits made before the updater started.
                   --dry-run    Print what would change without writing files.
 
                 Enable recording with the "✎ XAML" button in the web inspector. Pair with your
                 IDE's XAML Hot Reload for the full WYSIWYG loop.
+
+                Heap dumps: the panel's Memory view orders them, this tool carries them out with
+                dotnet-gcdump (+ dotnet-dsrouter for Android/iOS) and posts every type's counts,
+                sizes and root paths back to the panel. Missing or outdated tools are installed on
+                first use into ~/.maui-inspector/tools — your global tools stay untouched.
                 """);
             return 0;
         default:
@@ -74,6 +97,14 @@ if (!Directory.Exists(src))
 }
 
 var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+
+if (toolsOnly)
+{
+    var tools = new DiagnosticTools();
+    var problem = await tools.Check(new DumpTarget("android", true, 0, null), line => { Console.WriteLine(line); return Task.CompletedTask; });
+    Console.WriteLine(problem ?? "ready: " + tools.Inventory());
+    return problem == null ? 0 : 1;
+}
 
 if (forwardOnly)
 {
@@ -111,6 +142,7 @@ if (autoDiscover)
 Console.WriteLine($"XAML Updater: watching {(apps.Count > 0 ? string.Join(", ", apps) : "(waiting)")} → {src}{(dryRun ? "  (dry run)" : "")}");
 Console.WriteLine("Enable the \"✎ XAML\" toggle in the web inspector to record edits. Ctrl+C to stop.");
 var patcher = new XamlPatcher(src, dryRun);
+var heapDumps = new HeapDumpService(http, dumps);
 var cursors = new Dictionary<string, long>();
 var connectedApps = new HashSet<string>();
 
@@ -191,6 +223,9 @@ while (true)
             }
 
             cursors[url] = json?["seq"]?.GetValue<long>() ?? cursors[url];
+
+            // The Memory view's heap-dump orders ride the same loop.
+            await heapDumps.Poll(url);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {

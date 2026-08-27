@@ -8,7 +8,7 @@
 
 	<!-- Shared NuGet package metadata; versions of both packages move in lockstep. -->
 	<PropertyGroup>
-		<Version>0.9.16</Version>
+		<Version>0.9.18</Version>
 		<Authors>Artur Malendowicz "Immons"</Authors>
 		<Company>Immons</Company>
 		<Copyright>Copyright © Immons</Copyright>

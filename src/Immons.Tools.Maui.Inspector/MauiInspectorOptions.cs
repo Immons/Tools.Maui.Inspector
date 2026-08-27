@@ -62,4 +62,7 @@ public sealed class MauiInspectorOptions
 
     /// <summary>The design cookbook — the gallery of the app's styles, controls, colors, fonts and images.</summary>
     public CookbookOptions Cookbook { get; } = new();
+
+    /// <summary>The Memory view — instance tracking, leak snapshots and heap dumps.</summary>
+    public MemoryOptions Memory { get; } = new();
 }

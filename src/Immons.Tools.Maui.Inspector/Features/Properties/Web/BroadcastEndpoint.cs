@@ -11,7 +11,8 @@ namespace Immons.Tools.Maui.Inspector.Features.Properties.Web;
 internal sealed class BroadcastEndpoint(
     IMainThreadDispatcher mainThread,
     IActiveInspectorProvider inspectors,
-    IPropertyCollector properties) : IHttpEndpoint
+    IPropertyCollector properties,
+    ISyncTracker sync) : IHttpEndpoint
 {
     public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
     {
@@ -23,8 +24,10 @@ internal sealed class BroadcastEndpoint(
                 ["device"] = TreeJsonBuilder.DeviceDescription(),
                 ["instance"] = RemoteServer.InstanceId,
                 ["version"] = Shared.PackageVersion.Current,
-            }.ToJsonString();
-            await HttpResponse.WriteJson(context, json).ConfigureAwait(false);
+            };
+            // The heap-dump hand-off aims dotnet-gcdump by platform, emulator/device and diagnostic port.
+            HeapDumpTarget.Describe(json, sync.Connected);
+            await HttpResponse.WriteJson(context, json.ToJsonString()).ConfigureAwait(false);
             return true;
         }
 

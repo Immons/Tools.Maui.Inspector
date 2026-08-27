@@ -19,7 +19,7 @@ internal sealed class MirrorEndpoint(
                 try
                 {
                     bytes = await CaptureFrame().ConfigureAwait(false);
-                    _lastFrame = bytes;
+                    KeepFrame(bytes);
                 }
                 finally
                 {
@@ -70,8 +70,19 @@ internal sealed class MirrorEndpoint(
         return false;
     }
 
+    /// <summary>A screenshot is hundreds of kilobytes; the fallback copy goes away once nobody mirrors.</summary>
+    static readonly TimeSpan FrameKeptFor = TimeSpan.FromSeconds(10);
+
     readonly SemaphoreSlim _captureGate = new(1, 1);
     volatile byte[]? _lastFrame;
+    Timer? _frameExpiry;
+
+    void KeepFrame(byte[] frame)
+    {
+        _lastFrame = frame;
+        _frameExpiry ??= new Timer(_ => _lastFrame = null);
+        _frameExpiry.Change(FrameKeptFor, Timeout.InfiniteTimeSpan);
+    }
 
     /// <summary>
     /// Only the platform capture itself runs on the UI thread; the encode — the expensive

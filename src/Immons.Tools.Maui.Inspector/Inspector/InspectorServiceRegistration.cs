@@ -32,6 +32,18 @@ internal static class InspectorServiceRegistration
         services.AddSingleton<IResourceScopes, ResourceScopes>();
         services.AddSingleton<ICookbookCatalog, CookbookCatalog>();
         services.AddSingleton<ICookbookHost, CookbookHost>();
+        services.AddSingleton<IMainThreadDispatcher, MainThreadDispatcher>();
+        services.AddSingleton<ITrackedInstances, TrackedInstances>();
+        services.AddSingleton<IInstanceTracker, InstanceTracker>();
+        services.AddSingleton<ISnapshotRunner, SnapshotRunner>();
+        services.AddSingleton<IMemoryTimeline, MemoryTimeline>();
+        services.AddSingleton<IHeapDumpRequests, HeapDumpRequests>();
+        services.AddSingleton<INavigationLedger, NavigationLedger>();
+        services.AddSingleton<INavigationWatcher, NavigationWatcher>();
+        services.AddSingleton<ILeakNotifier, LeakNotifier>();
+        services.AddSingleton<IHolderScanner, HolderScanner>();
+        // The descriptors are read lazily — by then the collection holds everything the app registered.
+        services.AddSingleton<IServiceLifetimes>(_ => new ServiceLifetimes(services));
         services.AddSingleton<InspectorServices>();
         // Resolves the graph the moment MauiApp.Build() completes — before any app code runs.
         services.AddSingleton<IMauiInitializeService, InspectorServicesInitializer>();

@@ -48,6 +48,10 @@ internal sealed class SelectionJsonBuilder(
         // The server answers while backgrounded, but edits queued on the main thread do not run.
         result["fg"] = AppForegroundState.IsForeground;
         result["slow"] = SlowAnimations.Enabled;
+        // Two processes can end up answering one host port (an iOS simulator app binds the Mac's
+        // port while `adb forward` maps an Android app onto the same one). Then the panel shows
+        // two apps at once and nothing adds up — this nonce is how it notices.
+        result["instance"] = RemoteServer.InstanceId;
         return result.ToJsonString();
     }
 

@@ -91,13 +91,21 @@ internal sealed class RemoteServer
         Announce($"failed to start the web inspector on port(s) {port}–{port + range}: {StartError}", LogLevel.Warning);
     }
 
-    /// <summary>The adb-forward reminder only makes sense on Android.</summary>
+    /// <summary>
+    /// On Android the port lives in the device's own loopback, so the host needs a forward. That is
+    /// maui-inspector-sync's job — it finds every device and maps it onto a free host port by
+    /// itself. The manual line is the fallback, and deliberately not the 1:1 mapping: an iOS
+    /// simulator app binds the Mac's port of the same number, both bindings survive, and the
+    /// browser then gets the two servers in turn.
+    /// </summary>
     static string AdbHint(int port)
     {
         try
         {
             return DeviceInfo.Current.Platform == DevicePlatform.Android
-                ? $" — Android emulator: run `adb forward tcp:{port} tcp:{port}` first"
+                ? " — Android emulator: run maui-inspector-sync, it forwards this port to the host and prints the URL "
+                  + $"(by hand: `adb forward tcp:1{port} tcp:{port}`, then http://localhost:1{port}/ — a shifted host port, "
+                  + "because an iOS simulator app may already hold this number on the Mac)"
                 : "";
         }
         catch

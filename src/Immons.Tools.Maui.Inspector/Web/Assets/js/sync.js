@@ -37,18 +37,22 @@ function openSyncPrompt(connected) {
     const intro = document.createElement('div');
     intro.textContent = 'To write edits back to your XAML sources, start the updater in your project folder:';
     body.appendChild(intro);
-    if (isAndroid && String(devicePort) !== String(hostPort)) {
-      const fwd = document.createElement('div');
-      fwd.textContent = 'Android device — forward the port first:';
-      body.appendChild(fwd);
-      body.appendChild(Object.assign(document.createElement('code'),
-        { textContent: 'adb forward tcp:' + hostPort + ' tcp:' + devicePort }));
-    }
-    // The updater scans 9295-9309 and watches every inspector it finds by itself —
-    // --app is only needed for ports outside that range (custom forwards).
+
+    // The updater scans 9295-9309, and on Android it drives adb itself: it finds every connected
+    // device, forwards each app onto a free host port and watches it. So no adb forward to dictate
+    // here — the bare command covers the emulator too, whichever port this browser came in on.
+    // --app is only for an app it cannot reach that way: a physical device's IP, or a port of your
+    // own outside the scan range.
     const inScanRange = +hostPort >= 9295 && +hostPort <= 9309;
+    const bare = isAndroid || inScanRange;
     body.appendChild(Object.assign(document.createElement('code'),
-      { textContent: inScanRange ? 'maui-inspector-sync' : 'maui-inspector-sync --app http://localhost:' + hostPort }));
+      { textContent: bare ? 'maui-inspector-sync' : 'maui-inspector-sync --app http://localhost:' + hostPort }));
+    if (isAndroid) {
+      const how = document.createElement('div');
+      how.textContent = 'It reaches the emulator over adb by itself — it forwards the app\u2019s port '
+        + '(' + devicePort + ') to a free port on this machine, so there is nothing to forward by hand.';
+      body.appendChild(how);
+    }
     const install = document.createElement('div');
     install.textContent = 'No command? Install it once: dotnet tool install -g Immons.Tools.Maui.Inspector.Sync';
     body.appendChild(install);
@@ -103,6 +107,7 @@ setInterval(async () => {
     }
     const d = await r.json();
     setConnected(true, d.fg !== false);
+    checkInstance(d.instance);
 
     // Mirror adorners (alignment pins, grid designer) follow the device-side selection.
     window.selMeta = { id: d.id ?? null, rect: d.rect || null, h: d.halign || null, v: d.valign || null };

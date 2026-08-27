@@ -28,6 +28,12 @@ public static class MauiInspector
         // Replays persisted structural edits (SQLite backend) as pages appear.
         InspectorServices.Current.Replay.Hook();
 
+        // Weak census of everything that enters this window — the Memory view's leak snapshots —
+        // and the navigation ledger; the OS memory warnings feed the timeline's markers.
+        InspectorServices.Current.Tracker.Attach(window);
+        InspectorServices.Current.Navigation.Attach(window);
+        MemoryEvents.Start();
+
         if (!Inspectors.TryGetValue(window, out var inspector))
         {
             inspector = new WindowInspector(window, Options);
@@ -53,6 +59,20 @@ public static class MauiInspector
 
     /// <summary>Why the embedded web server failed to start; null when it runs or was not enabled.</summary>
     public static string? WebServerStartError => Web.Hosting.RemoteServer.StartError;
+
+    /// <summary>
+    /// Runs a leak snapshot — several full collections, then the census of what survived without a
+    /// window using it — and reports the app's own types among the suspects. For UI tests: navigate
+    /// through a flow, take the snapshot, fail when <see cref="MemoryReport.Leaks"/> is not empty.
+    /// The same over HTTP: <c>POST /api/memory/snapshot</c>.
+    /// </summary>
+    public static async Task<MemoryReport> TakeMemorySnapshotAsync()
+    {
+        var snapshot = await InspectorServices.Current.Snapshots.RunAsync().ConfigureAwait(false);
+        var totals = snapshot.Totals;
+        return new MemoryReport(snapshot.Time, totals.Tracked, totals.Alive, totals.Attached, totals.Detached,
+            InspectorServices.Current.Leaks.Summarize(snapshot));
+    }
 
     /// <summary>
     /// Mock scenario currently selected in the panel ("" when none). Debug builds can branch on it

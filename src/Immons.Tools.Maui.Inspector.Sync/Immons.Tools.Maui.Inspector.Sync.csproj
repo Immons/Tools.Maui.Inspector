@@ -10,9 +10,14 @@
 		<IsPackable>true</IsPackable>
 		<PackageId>Immons.Tools.Maui.Inspector.Sync</PackageId>
 		<Title>Immons.Tools.Maui.Inspector.Sync</Title>
-		<Description>XAML Updater — companion dotnet tool for Immons.Tools.Maui.Inspector: watches the in-app inspector for live property edits and writes them back into your XAML source files (WYSIWYG loop, pairs with IDE XAML Hot Reload).</Description>
-		<PackageTags>maui;dotnet-maui;inspector;xaml;wysiwyg;hot-reload;devtools;dotnet-tool</PackageTags>
+		<Description>XAML Updater — companion dotnet tool for Immons.Tools.Maui.Inspector: watches the in-app inspector for live property edits and writes them back into your XAML source files (WYSIWYG loop, pairs with IDE XAML Hot Reload). Also the desktop half of the Memory view's heap dumps: runs dotnet-gcdump against the app and reports every type's counts, sizes and root paths back to the panel.</Description>
+		<PackageTags>maui;dotnet-maui;inspector;xaml;wysiwyg;hot-reload;devtools;dotnet-tool;memory;gcdump</PackageTags>
 		<PackageOutputPath>$(MSBuildThisFileDirectory)..\..\nugets\</PackageOutputPath>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- FastSerialization — the stream format of .gcdump files (see Vendored/DotNetHeapDump/README.md). -->
+		<PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.23" />
+	</ItemGroup>
 
 </Project>

@@ -97,6 +97,45 @@ internal static class AdbForwarder
             .ToList();
     }
 
+    /// <summary>
+    /// dotnet-dsrouter's Android port forwarding drops every adb forward on the way in, ours to
+    /// the inspectors included — the panel would lose the app right when the dump lands. Remember
+    /// them before the dump and put back whatever is missing afterwards.
+    /// </summary>
+    public static async Task<List<Forward>> Snapshot()
+    {
+        try
+        {
+            return await ExistingForwards();
+        }
+        catch
+        {
+            return []; // no adb — nothing to restore either
+        }
+    }
+
+    public static async Task<int> Restore(List<Forward> snapshot)
+    {
+        if (snapshot.Count == 0)
+            return 0;
+        var restored = 0;
+        try
+        {
+            var current = await ExistingForwards();
+            foreach (var forward in snapshot.Where(f => !current.Any(c => c.Serial == f.Serial && c.HostPort == f.HostPort)))
+            {
+                var (code, _) = await Adb($"-s {forward.Serial} forward tcp:{forward.HostPort} tcp:{forward.DevicePort}");
+                if (code == 0)
+                    restored++;
+            }
+        }
+        catch
+        {
+            // adb went away mid-dump; the next scan re-establishes what it can
+        }
+        return restored;
+    }
+
     static async Task<List<Forward>> ExistingForwards()
     {
         var result = new List<Forward>();
@@ -136,20 +175,42 @@ internal static class AdbForwarder
     static int? PickFreeHostPort(int[] candidatePorts, int preferred)
     {
         foreach (var port in candidatePorts.OrderBy(p => p == preferred ? 0 : 1))
-        {
-            try
-            {
-                var listener = new TcpListener(IPAddress.Loopback, port);
-                listener.Start();
-                listener.Stop();
+            if (IsHostPortFree(port))
                 return port;
-            }
-            catch (SocketException)
-            {
-                // occupied — an iOS app, another forward, anything
-            }
-        }
         return null;
+    }
+
+    /// <summary>
+    /// Binding is not the test. An iOS simulator app binds the wildcard address (`*:9295`), and on
+    /// macOS a later bind of `127.0.0.1:9295` still succeeds — so a bind probe calls a taken port
+    /// free, the forward is created anyway, and the browser then gets the two servers in turn.
+    /// Connecting is the honest question: if anything accepts on loopback, the port is spoken for.
+    /// The bind still runs afterwards, for ports held by something that is not accepting.
+    /// </summary>
+    static bool IsHostPortFree(int port)
+    {
+        try
+        {
+            using var probe = new TcpClient();
+            if (probe.ConnectAsync(IPAddress.Loopback, port).Wait(TimeSpan.FromMilliseconds(250)))
+                return false;
+        }
+        catch
+        {
+            // Refused (nobody there) or timed out — fall through to the bind test.
+        }
+
+        try
+        {
+            var listener = new TcpListener(IPAddress.Loopback, port);
+            listener.Start();
+            listener.Stop();
+            return true;
+        }
+        catch (SocketException)
+        {
+            return false;
+        }
     }
 
     static async Task<(int Code, string Output)> Adb(string arguments)

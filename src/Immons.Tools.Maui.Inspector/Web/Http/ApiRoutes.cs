@@ -147,4 +147,27 @@ internal static class ApiRoutes
         public const string Compute = "/api/measure";
         public const string Clear = "/api/clear";
     }
+
+    public static class Memory
+    {
+        public const string Stats = "/api/memory";
+        public const string Gc = "/api/memory/gc";
+        public const string Peers = "/api/memory/peers";
+        public const string Snapshot = "/api/memory/snapshot";
+        public const string Baseline = "/api/memory/baseline";
+        public const string Dumps = "/api/memory/dumps";
+        public const string DumpReport = "/api/memory/dump/report";
+        public const string HeapDump = "/api/memory/heapdump";
+        public const string DumpRequest = "/api/memory/dump/request";
+        public const string DumpCancel = "/api/memory/dump/cancel";
+        public const string DumpPending = "/api/memory/dump/pending";
+        public const string DumpStatus = "/api/memory/dump/status";
+        public const string DumpResult = "/api/memory/dump/result";
+        public const string DumpTrace = "/api/memory/dump/trace";
+        public const string AllocRequest = "/api/memory/alloc/request";
+        public const string Settings = "/api/memory/settings";
+        public const string Ledger = "/api/memory/ledger";
+        public const string Snapshots = "/api/memory/snapshots";
+        public const string Images = "/api/memory/images";
+    }
 }
