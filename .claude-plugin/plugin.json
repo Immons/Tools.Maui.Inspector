@@ -1,0 +1,12 @@
+{
+  "name": "maui-inspector",
+  "description": "Hunting managed memory leaks in .NET MAUI apps with Immons.Tools.Maui.Inspector — heap dumps, GC-root chains and the recurring MAUI leak patterns.",
+  "version": "0.9.18",
+  "author": {
+    "name": "Artur Malendowicz \"Immons\"",
+    "url": "https://github.com/Immons"
+  },
+  "homepage": "https://github.com/Immons/Tools.Maui.Inspector/wiki",
+  "license": "MIT",
+  "skills": ["./.claude/skills/"]
+}

@@ -28,6 +28,7 @@ app prints the panel's URL.
 
 - **[UI tests](UI-tests.md)** — Maestro and Appium: AutomationIds, mocks, a leak gate
 - **[HTTP API](HTTP-API.md)** — every endpoint the panel itself uses
+- **[Leak-hunting skill](Memory-and-leaks.md#the-leak-hunting-skill-claude-code)** — the method as a Claude Code skill
 
 ### The rest
 

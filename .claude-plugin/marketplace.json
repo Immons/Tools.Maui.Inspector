@@ -1,0 +1,21 @@
+{
+  "name": "immons-maui-inspector",
+  "owner": {
+    "name": "Artur Malendowicz \"Immons\"",
+    "url": "https://github.com/Immons"
+  },
+  "metadata": {
+    "description": "Skills that go with Immons.Tools.Maui.Inspector, the in-app DevTools for .NET MAUI",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "maui-inspector",
+      "source": ".",
+      "description": "Hunting managed memory leaks in .NET MAUI apps: the two-snapshot rule, reading GC-root chains, the recurring causes (long-lived events, undisconnected handlers, cached views, the iOS cell-size cache) and how to drive the inspector's HTTP API.",
+      "version": "0.9.18",
+      "category": "developer tools",
+      "keywords": ["maui", "dotnet", "memory-leak", "heap-dump", "gcdump", "diagnostics", "mobile"]
+    }
+  ]
+}

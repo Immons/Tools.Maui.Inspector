@@ -56,4 +56,20 @@ curl -s -X POST localhost:9295/api/memory/snapshot | jq '.snapshot.suspects[] | 
 
 An empty `holders` with `rootKind: "interop"` is an answer, not a gap: the object is held by a native peer (an `NSNotificationCenter` observer, a `UIViewController` that was never dismissed, an Android listener), which no managed scan can see and no managed change can release.
 
+## The leak-hunting skill (Claude Code)
+
+The method this view is built around — measure twice N cycles apart, read the hints before
+dumping, fix the first app-owned type in the chain — is packaged as a Claude Code skill in this
+repository, together with the recurring MAUI causes and the API calls to drive the panel from a
+script:
+
+```
+/plugin marketplace add Immons/Tools.Maui.Inspector
+/plugin install maui-inspector@immons-maui-inspector
+```
+
+It loads itself when a conversation turns to leaks, detached-but-alive objects or memory growing
+across navigation. The source is [`.claude/skills/memory-leak-hunting/SKILL.md`](https://github.com/Immons/Tools.Maui.Inspector/blob/main/.claude/skills/memory-leak-hunting/SKILL.md);
+anyone working inside a clone of this repo gets it with no install at all.
+
 **Leak gate for UI tests** — `MauiInspector.TakeMemorySnapshotAsync()` returns a `MemoryReport` whose `Leaks` lists the app's own types still alive without a window (with what holds them); `options.Memory.OnLeak` fires with the same list after any snapshot that finds new ones. Over HTTP, a Maestro or Appium run does the same with `POST /api/memory/snapshot` and asserts `totals.detached == 0` — or, with watch mode on, `GET /api/memory/ledger` and asserts no entry is `alive`. Exports: **⤓ md** (snapshot, ledger, latest dump as Markdown for a ticket) and **⤓ csv** (the types table).
