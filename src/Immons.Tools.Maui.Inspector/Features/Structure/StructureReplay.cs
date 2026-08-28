@@ -8,7 +8,7 @@ namespace Immons.Tools.Maui.Inspector.Features.Structure;
 /// Replays persisted structural edits after an app restart: whenever a page appears, pending
 /// adds whose parent lives on that page are re-created (with their recorded attributes) and
 /// pending removes are re-applied. Ops target elements by XAML source identity, so a page
-/// rebuilt from unchanged XAML matches; once the XAML Updater has written the edit into the
+/// rebuilt from unchanged XAML matches; once the sync tool has written the edit into the
 /// source and the app was rebuilt, the op simply no longer finds a target.
 /// </summary>
 internal sealed class StructureReplay(IElementCatalog catalog, IAddedElements added)

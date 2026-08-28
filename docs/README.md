@@ -15,9 +15,9 @@ app prints the panel's URL.
 - **[WYSIWYG editor](WYSIWYG-editor.md)** — structure editing, toolbox, snap lines, grid designer
 - **[Multi-device](Multi-device.md)** — one panel, several simulators, emulators and phones
 
-### Writing changes back
+### The desktop companion
 
-- **[XAML Updater](XAML-Updater.md)** — the sync tool that lands panel edits in your `.xaml` files
+- **[Sync tool](Sync-tool.md)** — `maui-inspector-sync`: XAML write-back, heap dumps, device ports
 
 ### Diagnosing
 
@@ -32,9 +32,3 @@ app prints the panel's URL.
 ### The rest
 
 - **[Reference](Reference.md)** — platforms, options, storage, how it works, troubleshooting, limitations
-
----
-
-These pages are the source of truth; the [wiki](https://github.com/Immons/Tools.Maui.Inspector/wiki)
-is a mirror, republished from `docs/` on every push to `main`. Edit them here — a change made in the
-wiki directly is overwritten by the next mirror run.

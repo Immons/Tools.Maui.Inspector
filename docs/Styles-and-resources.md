@@ -18,7 +18,7 @@ dictionary — application, merged files, and the presented pages' own dictionar
 search box over keys, styles and setters. Colors and brushes get swatches and are editable;
 **scalar resources** (`x:Double`, `x:String`, booleans, `Thickness`, `CornerRadius`) are
 editable too; and each `Style` expands into its setters, editable inline (the style re-applies
-to its live consumers immediately). Every change is also recorded for the XAML Updater, which
+to its live consumers immediately). Every change is also recorded for the sync tool, which
 patches the owning dictionary file — located by `x:Key`, no line anchors — or the page file for
 inline page resources. `DynamicResource` consumers update live; `StaticResource` references were
 resolved at inflation time and show the new value after the page is rebuilt.

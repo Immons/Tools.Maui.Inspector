@@ -385,7 +385,7 @@ function toggleDeviceEditor(tr, id, section, row) {
         if (!value) return;
       } else {
         // Adaptive lives in the Extensions package's xmlns — the "inspector:" placeholder
-        // prefix is rewritten by the XAML Updater to whatever prefix the file declares
+        // prefix is rewritten by the sync tool to whatever prefix the file declares
         // (declaring it on the root when missing).
         const name = mode.value === 'Adaptive' ? 'inspector:Adaptive' : mode.value;
         value = '{' + name + ' ' + parts.join(', ') + '}';

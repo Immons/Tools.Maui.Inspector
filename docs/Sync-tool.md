@@ -1,7 +1,19 @@
-# XAML Updater (sync tool)
+# Sync tool (maui-inspector-sync)
 
-The inspector can act as a real WYSIWYG editor: edits made in the web panel (or on the
-device) are written back into your XAML source files.
+`maui-inspector-sync` is the desktop half of the inspector — one command in your app's source
+folder, and it does the work that cannot be done from inside the app:
+
+- **writes edits back into your XAML sources**, so the panel is a real WYSIWYG editor rather than a
+  runtime-only playground (the rest of this page);
+- **runs the heap dumps and allocation recordings** the Memory view offers, driving `dotnet-gcdump`,
+  `dotnet-trace` and `dotnet-dsrouter` and reporting types, sizes and root paths back to the panel
+  ([Memory & leaks](Memory-and-leaks.md));
+- **finds your devices and forwards their ports**, so an app on an Android emulator shows up in the
+  browser without a single `adb forward` typed by hand;
+- **watches several apps at once**, keeping one source folder in sync with every simulator,
+  emulator and phone it can reach.
+
+Everything below is the XAML write-back loop.
 
 1. In debug builds MAUI records the XAML source location (file + line) of every element —
    `UseMauiInspector` enables this automatically. The panel shows it above the
@@ -45,7 +57,7 @@ device) are written back into your XAML source files.
    `maui-inspector-sync forward` runs just this step and prints the URLs, useful when you
    only want mirrors without watching sources.
 
-   The panel header shows `XAML Updater ✓` once the tool is connected. When you open the
+   The panel header shows `Sync tool ✓` once the tool is connected. When you open the
    panel with editing off, it offers to enable it — and when no updater is running, it shows
    the exact commands to start one (including the `adb forward` line when needed) and
    verifies the tool is really polling before enabling.
@@ -63,6 +75,6 @@ device) are written back into your XAML source files.
 5. Pair it with your IDE's **XAML Hot Reload** and the loop closes: web edit → file save →
    hot reload → app updates.
 
-Safety: the XAML Updater verifies the element name at the recorded location and skips (with a warning)
+Safety: the sync tool verifies the element name at the recorded location and skips (with a warning)
 when the file has drifted — after editing XAML by hand, restart the app to refresh locations.
 Edits of objects that don't come from XAML (created in C#) are not recorded.

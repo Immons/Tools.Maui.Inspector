@@ -73,7 +73,7 @@ internal static class ElementCloner
 
     /// <summary>
     /// Built-ins render bare; anything else gets a local placeholder prefix (p1, p2, …) that
-    /// the XAML Updater maps onto the file's real xmlns declarations.
+    /// the sync tool maps onto the file's real xmlns declarations.
     /// </summary>
     static string TagName(Type type, Dictionary<string, string> xmlns)
     {

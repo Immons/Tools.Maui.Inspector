@@ -44,7 +44,7 @@ for (var i = 0; i < args.Length; i++)
             break;
         case "-h" or "--help":
             Console.WriteLine("""
-                XAML Updater (maui-inspector-sync) — writes live MauiInspector edits back into your XAML sources.
+                Sync tool (maui-inspector-sync) — writes live MauiInspector edits back into your XAML sources.
 
                 Typical use: cd into your app's source folder and just run
 
@@ -139,7 +139,7 @@ if (autoDiscover)
         Console.WriteLine("none found yet — will keep scanning (start the app with options.EnableWebServer = true)");
 }
 
-Console.WriteLine($"XAML Updater: watching {(apps.Count > 0 ? string.Join(", ", apps) : "(waiting)")} → {src}{(dryRun ? "  (dry run)" : "")}");
+Console.WriteLine($"Sync tool: watching {(apps.Count > 0 ? string.Join(", ", apps) : "(waiting)")} → {src}{(dryRun ? "  (dry run)" : "")}");
 Console.WriteLine("Enable the \"✎ XAML\" toggle in the web inspector to record edits. Ctrl+C to stop.");
 var patcher = new XamlPatcher(src, dryRun);
 var heapDumps = new HeapDumpService(http, dumps);

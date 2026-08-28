@@ -5,7 +5,7 @@ namespace Immons.Tools.Maui.Inspector.Features.Editing;
 /// <summary>
 /// The single walker behind the Resources popup and the cookbook: application dictionary,
 /// merged dictionaries (recursively) and the presented pages' own dictionaries, each paired
-/// with the file the XAML Updater should patch — the dictionary's Source, or for inline page
+/// with the file the sync tool should patch — the dictionary's Source, or for inline page
 /// resources the page's own source file.
 /// </summary>
 internal sealed class ResourceScopes(IActiveInspectorProvider inspectors) : IResourceScopes

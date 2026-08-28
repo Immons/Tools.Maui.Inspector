@@ -8,8 +8,8 @@
 - [WYSIWYG editor](WYSIWYG-editor)
 - [Multi-device](Multi-device)
 
-**Writing changes back**
-- [XAML Updater](XAML-Updater)
+**The desktop companion**
+- [Sync tool](Sync-tool)
 
 **Diagnosing**
 - [Network & HTTP mocking](Network-and-mocking)

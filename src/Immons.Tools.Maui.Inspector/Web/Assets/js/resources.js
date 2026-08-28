@@ -121,7 +121,7 @@ function filterResources(query) {
   }
 }
 
-// Applied live but not recorded for the XAML Updater — make that state impossible to miss.
+// Applied live but not recorded for the sync tool — make that state impossible to miss.
 function markRecorded(input, r) {
   const liveOnly = r.ok && r.recorded === false;
   input.classList.toggle('warn', liveOnly);

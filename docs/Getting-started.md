@@ -5,7 +5,7 @@
 | Package | What it is | Install |
 | --- | --- | --- |
 | [`Immons.Tools.Maui.Inspector`](https://www.nuget.org/packages/Immons.Tools.Maui.Inspector) | The inspector itself — add it to your MAUI app. | `dotnet add package Immons.Tools.Maui.Inspector` |
-| [`Immons.Tools.Maui.Inspector.Sync`](https://www.nuget.org/packages/Immons.Tools.Maui.Inspector.Sync) | The **XAML Updater** dotnet tool that writes panel edits back into your `.xaml` files (optional). | `dotnet tool install -g Immons.Tools.Maui.Inspector.Sync` |
+| [`Immons.Tools.Maui.Inspector.Sync`](https://www.nuget.org/packages/Immons.Tools.Maui.Inspector.Sync) | The **sync tool** (`maui-inspector-sync`) that writes panel edits back into your `.xaml` files (optional). | `dotnet tool install -g Immons.Tools.Maui.Inspector.Sync` |
 | [`Immons.Tools.Maui.Inspector.Persistency`](https://www.nuget.org/packages/Immons.Tools.Maui.Inspector.Persistency) | SQLite storage backend — worth adding once recorded scenarios grow large (optional). | `dotnet add package Immons.Tools.Maui.Inspector.Persistency` |
 | [`Immons.Tools.Maui.Inspector.Diagnostics`](https://www.nuget.org/packages/Immons.Tools.Maui.Inspector.Diagnostics) | Build-only: gives Debug Android/iOS builds the diagnostic port the Memory view's **heap dumps** need — nothing to configure (optional). | `dotnet add package Immons.Tools.Maui.Inspector.Diagnostics` |
 

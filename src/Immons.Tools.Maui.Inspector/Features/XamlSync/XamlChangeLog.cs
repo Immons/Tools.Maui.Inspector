@@ -6,7 +6,7 @@ namespace Immons.Tools.Maui.Inspector.Features.XamlSync;
 
 /// <summary>
 /// Records successful property edits together with the XAML source location of the edited
-/// object, for the XAML Updater tool to write back into the source files.
+/// object, for the sync tool to write back into the source files.
 /// Only the latest value per (object, attribute) — and per structural operation — is kept.
 /// </summary>
 internal sealed class XamlChangeLog(IAddedElements added) : IXamlChangeLog
@@ -14,7 +14,7 @@ internal sealed class XamlChangeLog(IAddedElements added) : IXamlChangeLog
     /// <summary>Sentinel returned by an editor's XamlValue to request attribute removal.</summary>
     public const string RemoveMarker = " remove-attribute ";
 
-    /// <summary>Operation kinds understood by the XAML Updater tool.</summary>
+    /// <summary>Operation kinds understood by the sync tool.</summary>
     public static class Ops
     {
         public const string Attribute = "attr";

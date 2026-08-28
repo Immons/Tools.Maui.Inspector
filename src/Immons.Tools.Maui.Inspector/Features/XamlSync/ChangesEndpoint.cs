@@ -4,7 +4,7 @@ using System.Text.Json.Nodes;
 namespace Immons.Tools.Maui.Inspector.Features.XamlSync;
 
 /// <summary>
-/// GET /api/changes?since= — polled by the XAML Updater tool. POST /api/changes/ack — the
+/// GET /api/changes?since= — polled by the sync tool. POST /api/changes/ack — the
 /// tool's per-change write results; GET /api/changes/status?seq= — the panel's per-field
 /// spinner asks here whether its edit reached the file.
 /// </summary>

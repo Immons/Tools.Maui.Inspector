@@ -23,13 +23,13 @@ function openSyncPrompt(connected) {
   body.innerHTML = '';
 
   if (connected) {
-    document.getElementById('synctitle').textContent = 'XAML Updater is connected';
+    document.getElementById('synctitle').textContent = 'Sync tool is connected';
     body.textContent = 'Enable XAML editing so property and structure edits are written back to your source files?';
     ok.textContent = 'Enable';
     ok.disabled = false;
     ok.onclick = () => { enableXamlEditing(); closeSyncPrompt(); };
   } else {
-    document.getElementById('synctitle').textContent = 'XAML Updater is not running';
+    document.getElementById('synctitle').textContent = 'Sync tool is not running';
     const hostPort = location.port || '80';
     const devicePort = window.devicePort || hostPort;
     const isAndroid = (window.deviceStr || '').includes('Android');

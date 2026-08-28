@@ -8,7 +8,7 @@ namespace Immons.Tools.Maui.Inspector.Features.Editing.Web;
 /// GET /api/resources — application- and page-level resource dictionaries (colors with
 /// swatches, brushes, styles, scalars). POST /api/resources/set — live-edits a Color/Brush or
 /// scalar (number, string, bool, Thickness, CornerRadius) resource in place and records the
-/// new value for the XAML Updater. DynamicResource consumers update immediately; StaticResource
+/// new value for the sync tool. DynamicResource consumers update immediately; StaticResource
 /// references were resolved at inflation time and keep their old value until the page is rebuilt.
 /// </summary>
 internal sealed class ResourcesEndpoint(
@@ -297,7 +297,7 @@ internal sealed class ResourcesEndpoint(
     /// <summary>
     /// Edits one setter of a keyed (or implicit, key = type full name) style: parses the value
     /// against the property's type, re-applies the style to its live consumers, and records the
-    /// change for the XAML Updater — anchored by style key, not by line numbers.
+    /// change for the sync tool — anchored by style key, not by line numbers.
     /// </summary>
     (bool Ok, bool Recorded) SetStyleSetter(string key, string propertyName, string text)
     {

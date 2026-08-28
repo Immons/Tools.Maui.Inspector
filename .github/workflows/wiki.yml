@@ -56,6 +56,15 @@ jobs:
           for image in src.iterdir():
               if image.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".svg"}:
                   shutil.copy2(image, dst / image.name)
+
+          # A page renamed or dropped in docs/ has to disappear from the wiki too, or it lingers
+          # there forever — unreachable from the sidebar but still served by search and old links.
+          keep = {("Home.md" if p.name == "README.md" else p.name) for p in src.glob("*.md")}
+          keep |= {p.name for p in src.iterdir() if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".svg"}}
+          for stale in dst.iterdir():
+              if stale.name != ".git" and stale.name not in keep:
+                  stale.unlink()
+                  print("removed", stale.name)
           PY
 
       - name: Push, if anything changed

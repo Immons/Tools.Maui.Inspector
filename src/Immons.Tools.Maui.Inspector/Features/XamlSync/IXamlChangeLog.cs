@@ -2,7 +2,7 @@ using Immons.Tools.Maui.Inspector.Features.Structure;
 
 namespace Immons.Tools.Maui.Inspector.Features.XamlSync;
 
-/// <summary>Registry of applied edits destined for the XAML Updater tool.</summary>
+/// <summary>Registry of applied edits destined for the sync tool.</summary>
 internal interface IXamlChangeLog
 {
     /// <summary>Runtime switch (toggled from the web client). Off by default — edits stay in-memory only.</summary>
@@ -73,7 +73,7 @@ internal interface IXamlChangeLog
     void RestoreElementUnwrap(StructureOp op);
 
     /// <summary>
-    /// includeStructural guards against version skew: a XAML Updater that predates element
+    /// includeStructural guards against version skew: a sync tool that predates element
     /// operations would apply them through its attribute path and corrupt the file, so
     /// structural changes are only served to clients that declare support (caps=el).
     /// </summary>

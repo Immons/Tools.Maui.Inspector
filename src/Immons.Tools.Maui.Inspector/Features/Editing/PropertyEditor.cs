@@ -20,7 +20,7 @@ internal sealed class PropertyEditor(EditorKind kind, IReadOnlyList<string>? cho
 
     public bool CanClear => ClearAction != null;
 
-    /// <summary>Clears the property and records an attribute removal for the XAML Updater.</summary>
+    /// <summary>Clears the property and records an attribute removal for the sync tool.</summary>
     public bool Clear()
     {
         if (ClearAction == null)

@@ -3,7 +3,7 @@
 Properties are half the story — the inspector also edits the **structure** of a running page:
 add controls, delete them, reorder, reparent, wrap and unwrap, copy & paste — live on the
 device, recorded in the edit history with full undo/redo, and (with the
-[XAML Updater](XAML-Updater.md#xaml-updater-sync-tool) running) written back into
+[Sync tool](Sync-tool.md#sync-tool-maui-inspector-sync) running) written back into
 your `.xaml` sources as real, compilable markup.
 
 ![Structure editing overview](wysiwyg-overview.png)
@@ -89,9 +89,9 @@ chain, so repeated undo keeps going deeper instead of re-doing itself. `Ctrl/Cmd
 
 - With the SQLite storage package, structural edits **survive app restarts**: pending adds
   (with their edited attributes), removes, moves and wraps are re-applied when the page loads,
-  matched by XAML source identity — until the XAML Updater has written them into the sources
+  matched by XAML source identity — until the sync tool has written them into the sources
   and they become plain markup.
-- The XAML Updater applies structural operations with the same in-place, no-reformat policy as
+- The sync tool applies structural operations with the same in-place, no-reformat policy as
   attribute edits: inserts are anchored to their parent and neighbours, later edits *upsert*
   the same snippet instead of duplicating it, moves relocate the element's exact span
   (re-indented for its new depth), and undo restores the removed text verbatim. Structural

@@ -8,7 +8,7 @@ namespace Immons.Tools.Maui.Inspector.Features.Structure;
 /// <summary>
 /// Structural edits driven from the web client. Every operation lands in three places: the live
 /// tree (immediately), the structure store (replayed after an app restart) and the XAML change
-/// log (written back to the sources by the XAML Updater tool).
+/// log (written back to the sources by the sync tool).
 /// </summary>
 internal sealed class StructureCommands(
     IActiveInspectorProvider inspectors,

@@ -49,7 +49,7 @@ jobs:
           dotnet pack src/Immons.Tools.Maui.Inspector.Persistency/Immons.Tools.Maui.Inspector.Persistency.csproj
           -c Release -o ./artifacts -p:GeneratePackageOnBuild=false
 
-      - name: Pack the XAML Updater tool
+      - name: Pack the sync tool
         run: >
           dotnet pack src/Immons.Tools.Maui.Inspector.Sync/Immons.Tools.Maui.Inspector.Sync.csproj
           -c Release -o ./artifacts -p:GeneratePackageOnBuild=false

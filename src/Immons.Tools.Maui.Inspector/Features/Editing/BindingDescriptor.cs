@@ -4,7 +4,7 @@ namespace Immons.Tools.Maui.Inspector.Features.Editing;
 
 /// <summary>
 /// Detects an active data binding on a bindable property and renders it as XAML-like text
-/// ("{Binding Title}"). Editors use this to warn the user and to keep the XAML Updater
+/// ("{Binding Title}"). Editors use this to warn the user and to keep the sync tool
 /// from overwriting a binding expression with a literal runtime value.
 /// </summary>
 internal static class BindingDescriptor

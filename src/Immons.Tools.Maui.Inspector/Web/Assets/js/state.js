@@ -35,8 +35,8 @@ function updateHint() {
     hint.textContent = 'measure: pick the second element here or on the device';
   else if (wysiwyg)
     hint.textContent = syncConnected
-      ? 'XAML Updater ✓'
-      : 'XAML Updater not running — in your app source folder run: maui-inspector-sync';
+      ? 'Sync tool ✓'
+      : 'Sync tool not running — in your app source folder run: maui-inspector-sync';
   else
     hint.textContent = '';
 }

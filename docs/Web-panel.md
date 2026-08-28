@@ -31,8 +31,8 @@ Single-key shortcuts toggle the modes — **S** Select, **M** Measure, **G** Gui
 Panel (plus `Ctrl/Cmd+Z` undo, `Ctrl/Cmd+C/V` copy & paste, Delete to remove the selection). The
 properties list keeps its scroll position when the selection changes, so comparing the same
 section across elements doesn't mean scrolling down again. Property edits apply **live** — and,
-with the XAML Updater running, they are
-[written back into your XAML sources](XAML-Updater.md#xaml-updater-sync-tool).
+with the sync tool running, they are
+[written back into your XAML sources](Sync-tool.md#sync-tool-maui-inspector-sync).
 
 The other views are covered in their own chapters: [Cookbook](Styles-and-resources.md#the-design-cookbook) (the app's
 design system as live samples), [Network & mocks](Network-and-mocking.md#network--http-mocking), **Logs** (streams
