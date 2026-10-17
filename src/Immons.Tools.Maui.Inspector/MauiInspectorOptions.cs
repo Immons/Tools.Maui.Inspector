@@ -43,6 +43,25 @@ public sealed class MauiInspectorOptions
     /// </summary>
     public int? WebServerPort { get; set; }
 
+    /// <summary>
+    /// Lets HTTP clients drive the app: tap, long-press, swipe, scroll, type and set text, go back
+    /// (<c>/api/tap</c>, <c>/api/text</c>, <c>/api/swipe</c>… — see docs/HTTP-API.md). Only matters
+    /// with <see cref="EnableWebServer"/>; reading endpoints (find, wait, page, screenshot) stay
+    /// available when this is off, input-driving ones answer 403. Anyone who can reach the port
+    /// on the network can operate the app — keep the web server out of release builds
+    /// (wrap <c>UseMauiInspector</c> in <c>#if DEBUG</c>) or turn this off there. Default: true.
+    /// </summary>
+    public bool EnableRemoteControl { get; set; } = true;
+
+    /// <summary>
+    /// Remote taps and gestures are injected as real platform touches, so they take the same
+    /// path as a finger (hit-testing, gesture recognizers, CollectionView selection). iOS does this
+    /// through private UIKit API — fine for development and test builds, never for an App Store
+    /// build. Off = taps fall back to invoking the tapped control's own handlers at the MAUI level,
+    /// and swipes/long-presses are unavailable. Default: true.
+    /// </summary>
+    public bool NativeTouchInjection { get; set; } = true;
+
     /// <summary>Also toggle the inspector by shaking the device. Default: false.</summary>
     public bool ShakeToOpen { get; set; }
 

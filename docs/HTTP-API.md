@@ -7,7 +7,7 @@ All POST bodies are JSON. Base URL is the one printed at startup (`MauiInspector
 
 | Method & path | What it does |
 | --- | --- |
-| `GET /api/ping` | App name, device, instance id and the inspector's package version |
+| `GET /api/ping` | App name, device, instance id, the inspector's version — and for discovery: `deviceName`, `model`, `osVersion`, `appId`, `appVersion`, `port`, `addresses`/`urls` (the device's LAN addresses), `window` (size and pixel `scale`), `remoteControl` |
 | `GET /api/tree` | Visual tree as JSON |
 | `GET /api/dump` | The tree as plain text |
 | `GET /api/selection` | Currently selected element with its properties |
@@ -17,13 +17,30 @@ All POST bodies are JSON. Base URL is the one printed at startup (`MauiInspector
 | `GET /api/history` · `POST /api/history/undo` | Applied edits; undo the last one |
 | `GET /api/changes` | Edits pending write-back to XAML |
 | `GET /api/measure` · `POST /api/clear` | Distance between two elements; clear the measurement |
-| `GET /api/screenshot` · `POST /api/select-at` | Device mirror image; select by screen coordinates |
+| `GET /api/screenshot` · `POST /api/select-at` | Device mirror image (JPEG, physical pixels — divide by `window.scale` for window units); select by window coordinates |
 | `GET /api/cookbook` | The design cookbook catalog: sections and items, what the device has built, the theme |
 | `POST /api/cookbook/open` | `{on, section?, page?, item?}` — push / pop the cookbook page on the device and steer what it shows |
 | `GET /api/cookbook/preview?id=…` | PNG of one cookbook tile (rendered on a stage when not on screen); `X-Visual-States` header lists its states |
 | `POST /api/cookbook/focus` | `{id}` — single out the item at full width: headless on the off-screen stage, or on a page of its own when the gallery is open on the device; `null` drops it. `preview?id=…&focus=1` captures that instance |
 | `POST /api/cookbook/state` | `{id, state}` — force a visual state on the sample the device shows (the focused one, else its tile) |
 | `GET /api/theme` · `POST /api/theme` | `{theme: "system" \| "light" \| "dark"}` — the app-wide theme override |
+
+**Remote control** — drive the app from a script or an agent, on a simulator or a physical device
+(details and examples [below](#remote-control)):
+
+| Method & path | What it does |
+| --- | --- |
+| `POST /api/tap` | `{x, y}` or a selector — taps like a finger |
+| `POST /api/long-press` | `{x, y}` or a selector, `durationMs` (800) |
+| `POST /api/swipe` | `{x1, y1, x2, y2, durationMs}`, or `{direction, amount}` with an optional selector |
+| `POST /api/scroll` | `{direction, amount, gesture?}` and an optional selector of the container |
+| `POST /api/scroll-to` | selector of the target, `direction`, `maxScrolls`, optional `container` selector |
+| `POST /api/text` | `{value, clear?, submit?, dismiss?}` and a selector (else the focused input) |
+| `POST /api/key` | `{text}` or `{key}` (`Backspace`, `Delete`, `Enter`, `ArrowLeft`…) into the focused input |
+| `POST /api/back` | The platform back: popup → modal → navigation/Shell |
+| `GET /api/find` | `?automationId=` / `text=` / `placeholder=` / `type=` / `id=` — every match with bounds, visibility, enabled, focus |
+| `POST /api/wait` | selector, `timeoutMs` (10 000), `gone?` — until it shows up (or disappears); 408 on timeout |
+| `GET /api/page` | Current page (type, title), navigation and modal stacks, popups, tabs, window size and scale, focused input |
 
 **Toggles** — each takes `POST {on: bool}`: `/api/measure-mode`, `/api/select-mode`, `/api/overlay`,
 `/api/debug-paint`, `/api/perf`, `/api/slow-animations`, `/api/wysiwyg`.
@@ -71,3 +88,111 @@ All POST bodies are JSON. Base URL is the one printed at startup (`MauiInspector
 app on every connected device, matched by XAML source identity with the name/page fallbacks.
 
 **Logs** — `GET /api/logs` returns what `builder.Logging.AddMauiInspector()` collected.
+
+## Remote control
+
+The input endpoints let a script — a shell loop, a test runner, an AI agent — operate the app the way
+a person would, over plain HTTP. They work with any `Activation` (also `None`: the on-device panel
+never has to be opened) and need `EnableWebServer = true`; `EnableRemoteControl = false` switches them
+off (403) while keeping the reading endpoints.
+
+**Reaching the device.** The server binds `http://*:{port}` (9295 upwards, see `GET /api/ping` → `port`).
+
+- *iOS simulator* — the app listens on the Mac itself: `http://localhost:9295`.
+- *Physical iPhone/iPad on the same Wi-Fi* — `http://<device-ip>:9295`; the IP is in Settings → Wi-Fi,
+  in the app's startup log, or found by `tools/inspector-remote.sh discover 192.168.1` (scans the /24 for
+  `/api/ping`). Over USB instead: `iproxy 9295 9295` (libimobiledevice) and use `localhost`. If the phone
+  does not answer, check the app's *Local Network* permission (iOS asks the first time the app talks to
+  the LAN) and that the Wi-Fi does not isolate clients.
+- *Android* — `adb forward tcp:19295 tcp:9295` (or let `maui-inspector-sync` do it), device IP on Wi-Fi.
+
+**Selectors.** Every endpoint that targets an element takes the same fields; all given ones must match:
+
+| Field | Matches |
+| --- | --- |
+| `automationId` | `AutomationId` (case-insensitive); on iOS also the accessibility identifier of native views (tab bar buttons…) |
+| `text` | What the element shows: Label (spans included), Button, Entry/Editor text or placeholder, RadioButton, Picker, `SemanticProperties.Description`, and a `Text`/`Hint`/`Placeholder`/`Title` string property of custom controls. Case- and whitespace-insensitive; exact matches win over substrings |
+| `placeholder` | Entry/Editor/SearchBar placeholder, Picker title |
+| `type` | Type name or a base type's (`Entry` also finds subclasses) |
+| `id` | The element id from `/api/tree` or `/api/find` |
+| `index` | Which match (0 = the first one a finger can reach) |
+| `exact` | `true` = no substring matches |
+
+Lookups search what is on screen: Mopups popups first, then modal pages, then the window's page — and
+inside tabbed / navigation / flyout / Shell pages only the current page. Elements inside
+CollectionView/ScrollView cells are found like any other. When nothing in the MAUI tree matches an
+`automationId`/`text`, native views are searched (on iOS: tab bar buttons, navigation bar items,
+`DisplayAlert` buttons). `index` 0 skips matches something else covers (the page under a modal).
+
+**Taps are touches.** On iOS and Android the tap is injected into the platform's touch pipeline at the
+element's center — hit-testing, gesture recognizers, UIControl tracking, CollectionView selection and
+scroll views see a real finger. On iOS this synthesizes `UITouch` events the way UI-test drivers such as
+KIF do, through private UIKit API: fine for debug and test builds, never for an App Store build
+(`NativeTouchInjection = false` turns it off). Without injection (Windows, or switched off) a tap invokes
+the element's own reaction instead — gesture recognizers, button clicks, toggles, focusing inputs,
+selecting the CollectionView item — and `native: false` asks for that path on purpose. Responses say
+which path ran: `"via": "touch" | "semantic" | "native"`. An element that is off screen inside a scroll
+container is scrolled to its center before the tap (`scroll: false` prevents that).
+
+```bash
+B=http://localhost:9295
+curl -s $B/api/ping                                                   # which device/app is this
+curl -s $B/api/page                                                   # where am I
+curl -s -X POST $B/api/tap  -d '{"text":"emailem i hasłem"}'          # tap by visible text
+curl -s -X POST $B/api/text -d '{"text":"Email","value":"me@example.com"}'   # caption of a field → its Entry
+curl -s -X POST $B/api/text -d '{"automationId":"PasswordEntry","value":"secret","submit":true}'
+curl -s -X POST $B/api/tap  -d '{"text":"Kontynuuj"}'
+curl -s -X POST $B/api/wait -d '{"text":"Kontynuuj","gone":true,"timeoutMs":20000}'
+curl -s -X POST $B/api/tap  -d '{"automationId":"Tab_ChatsViewModel"}'      # a native tab bar button
+curl -s -X POST $B/api/scroll -d '{"direction":"down","amount":0.8}'        # programmatic, reports "moved"
+curl -s -X POST $B/api/scroll -d '{"direction":"down","gesture":true}'      # a real drag instead
+curl -s -X POST $B/api/scroll-to -d '{"text":"Ustawienia","maxScrolls":30}'  # page a list until it shows
+curl -s -X POST $B/api/swipe -d '{"x1":200,"y1":400,"x2":200,"y2":750,"durationMs":250}'
+curl -s -X POST $B/api/swipe -d '{"text":"Wiadomość","direction":"left"}'   # e.g. reveal SwipeView items
+curl -s -X POST $B/api/long-press -d '{"text":"Kapcie","durationMs":900}'
+curl -s -X POST $B/api/back
+curl -s "$B/api/find?text=Czat&exact=1"
+curl -s -o screen.jpg $B/api/screenshot
+```
+
+Details:
+
+- **Coordinates** are window units (points on iOS, dp on Android) — `/api/find` returns them; the
+  screenshot is in physical pixels (`window.scale` × larger).
+- **`/api/swipe` `direction`** is the way the *finger* moves (`left` reveals a SwipeView's right items);
+  **`/api/scroll` `direction`** is the way the *content* goes (`down` shows what is below). `amount` up
+  to 1 is a fraction of the viewport, larger values are units. Without a selector, swipes and scrolls use
+  the largest scrollable area on screen.
+- **`/api/scroll`** sets the scroll container's offset directly (exact, no fling; `moved: false` means
+  the end was reached); `gesture: true` drags it with an injected touch instead.
+- **`/api/text`** focuses the input, replaces its text (`clear: false` appends), puts the cursor at the
+  end, `submit: true` raises `Completed` / the search action, `dismiss: true` unfocuses (hides the
+  keyboard). The selector may point at the input itself, at a container holding it (a custom field) or
+  at the field's caption next to it. Password values are masked in the response.
+- **`/api/back`** pops the topmost Mopups popup, else gives the top modal page its back handling (a
+  NavigationPage inside pops) or pops the modal, else sends the back button to the page — `OnBackButtonPressed`
+  overrides get their say, as with the Android button. The response's `action` names what happened.
+- **Errors** are JSON `{ok: false, error}` with a status: 400 bad request, 403 remote control disabled,
+  404 no match, 408 wait timeout, 409 element found but not on screen, 422 no input at the selector,
+  501 the gesture needs touch injection.
+
+**Limits.** Only the app's own UI is reachable: system UI drawn by iOS/Android outside the process —
+permission prompts (camera, microphone, notifications, location), CallKit's incoming-call screen, the
+share sheet, Photos/document pickers, the keyboard itself, Control Center — cannot be tapped or seen in
+`/api/find` (the screenshot does not include them either). Grant permissions up front (`xcrun simctl
+privacy <device> grant camera <bundle-id>`, `adb shell pm grant …`) or tap them by hand. In-app
+`DisplayAlert`/action sheets are reachable. WebViews receive the touches, but their DOM is not searchable.
+
+**Security.** The server has no authentication — anyone who can reach the port can read the UI and,
+with remote control, operate the app. Keep it to debug/test builds:
+
+```csharp
+#if DEBUG
+builder.UseMauiInspector(o => o.EnableWebServer = true);
+#endif
+// or, when the inspector ships in a test flavor: o.EnableRemoteControl = false; o.NativeTouchInjection = false;
+```
+
+A helper for the Mac side wraps the common calls: `tools/inspector-remote.sh` (`discover`, `ping`,
+`page`, `shot`, `tap-text`, `tap-id`, `text-id`, `text-ph`, `wait-text`, `wait-gone`, `scroll`,
+`scroll-to-text`, `swipe`, `long-press-text`, `back`; `INSPECTOR=http://host:port` picks the app).

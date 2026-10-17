@@ -12,5 +12,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/HeapDumpReaderTests/HeapDumpReaderTests.csproj" />
     <Project Path="tests/PatcherTests/PatcherTests.csproj" />
+    <Project Path="tests/RemoteControlTests/RemoteControlTests.csproj" />
   </Folder>
 </Solution>

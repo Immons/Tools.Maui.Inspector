@@ -28,8 +28,8 @@ JPEG-encoded off the UI thread with captures never queueing up behind a slow one
 running app stays smooth while the mirror streams.
 
 With **Select mode off**, clicking the mirror forwards the tap into the app itself — like a
-remote-desktop client. On Android a real touch event is injected (buttons, list rows, entries —
-everything reacts); on the other platforms the tapped element's own handlers are triggered
+remote-desktop client. On Android and iOS a real touch event is injected (buttons, list rows,
+entries — everything reacts); on Windows the tapped element's own handlers are triggered
 (`TapGestureRecognizer`, buttons, switches, checkboxes). Flip Select back on and clicks select
 elements again. Rotating the device clears the selection — adaptive layouts rebuild on rotation,
 so a kept selection would point at a stale element.

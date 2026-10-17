@@ -17,7 +17,9 @@ The Windows target only builds on Windows machines (guarded in the csproj).
 | --- | --- | --- |
 | `EnableWebServer` | `false` | Embedded web panel for desktop browsers. |
 | `WebServerPort` | `null` (auto) | `null` picks a free port from 9295–9309; a value forces that exact port. |
-| `Activation` | `LongPress` | `LongPress` or `None` (manual `Show()` only). |
+| `EnableRemoteControl` | `true` | With the web server on: lets HTTP clients tap, swipe, scroll, type and go back ([HTTP API](HTTP-API.md#remote-control)). Off = those endpoints answer 403; reading (find, wait, page, screenshot) stays. |
+| `NativeTouchInjection` | `true` | Remote taps/gestures are real platform touches (iOS: private UIKit API — never in an App Store build; Android: MotionEvents). Off = MAUI-level taps only, no swipe/long-press. |
+| `Activation` | `LongPress` | `LongPress` or `None` (manual `Show()` only). The web panel and remote control work in both. |
 | `LongPressDuration` | 900 ms | Hold time before the overlay opens (iOS/Android). |
 | `LongPressTouchCount` | 1 | 1 or 2 fingers. |
 | `ShakeToOpen` | `false` | Shake the device to toggle the overlay. |

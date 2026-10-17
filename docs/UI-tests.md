@@ -1,5 +1,9 @@
 # UI tests (Maestro, Appium)
 
+> No test framework at hand, or a physical device Maestro cannot reach? The inspector can drive the
+> app by itself over HTTP — tap by `AutomationId` or text, type, scroll, wait, go back: see
+> [Remote control](HTTP-API.md#remote-control).
+
 A UI test needs two things from the inspector: **which rules exist** and **which scenario is
 active** — decided before the app makes its first call, because a version check or a token refresh
 fires during startup, long before a test step could run.

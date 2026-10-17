@@ -11,10 +11,10 @@ internal sealed partial class WindowInspector
     UIView? _highlightPlatform;
     UIView? _panelPlatform;
 
-    private partial void AttachPlatform()
+    private partial void AttachPlatform(bool activationGesture)
     {
         _uiWindow = _window.Handler?.PlatformView as UIWindow;
-        if (_uiWindow == null)
+        if (_uiWindow == null || !activationGesture)
             return;
 
         _recognizer = new UILongPressGestureRecognizer(OnLongPress)
