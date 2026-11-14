@@ -1,21 +1,18 @@
 namespace Immons.Tools.Maui.Inspector;
 
-/// <summary>How the inspector overlay gets activated at runtime.</summary>
-public enum InspectorActivation
-{
-    /// <summary>No gesture; call <see cref="MauiInspector.Show()"/> manually.</summary>
-    None,
-
-    /// <summary>A long press anywhere in the window opens the inspector on the pressed element.</summary>
-    LongPress,
-}
-
 public sealed class MauiInspectorOptions
 {
-    /// <summary>Gesture that activates the inspector. Default: <see cref="InspectorActivation.LongPress"/>.</summary>
+    /// <summary>
+    /// Gesture that activates the inspector. Default: <see cref="InspectorActivation.LongPress"/>.
+    /// <see cref="InspectorActivation.None"/> installs no gesture at all: the overlay then opens only through
+    /// <see cref="MauiInspector.Show()"/>, the web panel or <see cref="ShakeToOpen"/>.
+    /// </summary>
     public InspectorActivation Activation { get; set; } = InspectorActivation.LongPress;
 
-    /// <summary>How long the press must be held before the inspector opens. Default: 900 ms.</summary>
+    /// <summary>
+    /// How long the press must be held before the inspector opens. Default: 900 ms.
+    /// Zero or negative falls back to the default. Only used with <see cref="InspectorActivation.LongPress"/>.
+    /// </summary>
     public TimeSpan LongPressDuration { get; set; } = TimeSpan.FromMilliseconds(900);
 
     /// <summary>

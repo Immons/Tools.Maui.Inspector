@@ -22,7 +22,7 @@ internal sealed class LongPressDetector
     public LongPressDetector(Context context, MauiInspectorOptions options, Action<float, float> onLongPress)
     {
         _slopPx = (ViewConfiguration.Get(context)?.ScaledTouchSlop ?? 16) * 2f;
-        _durationMs = (long)options.LongPressDuration.TotalMilliseconds;
+        _durationMs = (long)ActivationGate.EffectiveDuration(options.LongPressDuration).TotalMilliseconds;
         _requiredPointers = Math.Clamp(options.LongPressTouchCount, 1, 2);
         _onLongPress = onLongPress;
         _handler = new Android.OS.Handler(Android.OS.Looper.MainLooper!);

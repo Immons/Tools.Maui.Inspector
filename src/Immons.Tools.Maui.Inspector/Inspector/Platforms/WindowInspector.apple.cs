@@ -19,7 +19,7 @@ internal sealed partial class WindowInspector
 
         _recognizer = new UILongPressGestureRecognizer(OnLongPress)
         {
-            MinimumPressDuration = _options.LongPressDuration.TotalSeconds,
+            MinimumPressDuration = ActivationGate.EffectiveDuration(_options.LongPressDuration).TotalSeconds,
             NumberOfTouchesRequired = (nuint)Math.Clamp(_options.LongPressTouchCount, 1, 2),
             CancelsTouchesInView = false,
             DelaysTouchesBegan = false,
