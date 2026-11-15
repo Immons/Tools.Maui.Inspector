@@ -13,11 +13,11 @@ internal sealed partial class WindowInspector
     AView? _highlightPlatform;
     AView? _panelPlatform;
 
-    private partial void AttachPlatform()
+    private partial void AttachPlatform(bool activationGesture)
     {
         _activity = _window.Handler?.PlatformView as Activity;
         var platformWindow = _activity?.Window;
-        if (_activity == null || platformWindow?.Callback == null || platformWindow.Callback is WindowCallbackInterceptor)
+        if (!activationGesture || _activity == null || platformWindow?.Callback == null || platformWindow.Callback is WindowCallbackInterceptor)
             return;
 
         var detector = new LongPressDetector(_activity, _options, OnLongPressPx);

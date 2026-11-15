@@ -32,10 +32,10 @@ internal sealed partial class WindowInspector
 
     WPanel? RootPanel => _platformWindow?.Content as WPanel;
 
-    private partial void AttachPlatform()
+    private partial void AttachPlatform(bool activationGesture)
     {
         _platformWindow = _window.Handler?.PlatformView as WWindow;
-        if (_platformWindow == null)
+        if (_platformWindow == null || !activationGesture)
             return;
 
         if (RootPanel != null)

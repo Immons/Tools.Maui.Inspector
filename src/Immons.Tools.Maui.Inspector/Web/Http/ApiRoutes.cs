@@ -121,6 +121,20 @@ internal static class ApiRoutes
         public const string Key = "/api/key";
     }
 
+    /// <summary>Driving the app from scripts and agents (the mirror's tap/key live in <see cref="Mirror"/>).</summary>
+    public static class Remote
+    {
+        public const string Find = "/api/find";
+        public const string Wait = "/api/wait";
+        public const string Page = "/api/page";
+        public const string LongPress = "/api/long-press";
+        public const string Swipe = "/api/swipe";
+        public const string Scroll = "/api/scroll";
+        public const string ScrollTo = "/api/scroll-to";
+        public const string Text = "/api/text";
+        public const string Back = "/api/back";
+    }
+
     public static class Broadcast
     {
         public const string Ping = "/api/ping";

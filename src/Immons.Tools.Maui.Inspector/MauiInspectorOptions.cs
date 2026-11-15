@@ -1,21 +1,18 @@
 namespace Immons.Tools.Maui.Inspector;
 
-/// <summary>How the inspector overlay gets activated at runtime.</summary>
-public enum InspectorActivation
-{
-    /// <summary>No gesture; call <see cref="MauiInspector.Show()"/> manually.</summary>
-    None,
-
-    /// <summary>A long press anywhere in the window opens the inspector on the pressed element.</summary>
-    LongPress,
-}
-
 public sealed class MauiInspectorOptions
 {
-    /// <summary>Gesture that activates the inspector. Default: <see cref="InspectorActivation.LongPress"/>.</summary>
+    /// <summary>
+    /// Gesture that activates the inspector. Default: <see cref="InspectorActivation.LongPress"/>.
+    /// <see cref="InspectorActivation.None"/> installs no gesture at all: the overlay then opens only through
+    /// <see cref="MauiInspector.Show()"/>, the web panel or <see cref="ShakeToOpen"/>.
+    /// </summary>
     public InspectorActivation Activation { get; set; } = InspectorActivation.LongPress;
 
-    /// <summary>How long the press must be held before the inspector opens. Default: 900 ms.</summary>
+    /// <summary>
+    /// How long the press must be held before the inspector opens. Default: 900 ms.
+    /// Zero or negative falls back to the default. Only used with <see cref="InspectorActivation.LongPress"/>.
+    /// </summary>
     public TimeSpan LongPressDuration { get; set; } = TimeSpan.FromMilliseconds(900);
 
     /// <summary>
@@ -42,6 +39,25 @@ public sealed class MauiInspectorOptions
     /// Set a value to force that exact port (no fallback).
     /// </summary>
     public int? WebServerPort { get; set; }
+
+    /// <summary>
+    /// Lets HTTP clients drive the app: tap, long-press, swipe, scroll, type and set text, go back
+    /// (<c>/api/tap</c>, <c>/api/text</c>, <c>/api/swipe</c>… — see docs/HTTP-API.md). Only matters
+    /// with <see cref="EnableWebServer"/>; reading endpoints (find, wait, page, screenshot) stay
+    /// available when this is off, input-driving ones answer 403. Anyone who can reach the port
+    /// on the network can operate the app — keep the web server out of release builds
+    /// (wrap <c>UseMauiInspector</c> in <c>#if DEBUG</c>) or turn this off there. Default: true.
+    /// </summary>
+    public bool EnableRemoteControl { get; set; } = true;
+
+    /// <summary>
+    /// Remote taps and gestures are injected as real platform touches, so they take the same
+    /// path as a finger (hit-testing, gesture recognizers, CollectionView selection). iOS does this
+    /// through private UIKit API — fine for development and test builds, never for an App Store
+    /// build. Off = taps fall back to invoking the tapped control's own handlers at the MAUI level,
+    /// and swipes/long-presses are unavailable. Default: true.
+    /// </summary>
+    public bool NativeTouchInjection { get; set; } = true;
 
     /// <summary>Also toggle the inspector by shaking the device. Default: false.</summary>
     public bool ShakeToOpen { get; set; }

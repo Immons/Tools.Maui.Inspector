@@ -2,7 +2,10 @@ using System.Net;
 
 namespace Immons.Tools.Maui.Inspector.Features.Mirroring;
 
-/// <summary>GET /api/screenshot (PNG) and POST /api/select-at (mirror click hit-test).</summary>
+/// <summary>
+/// GET /api/screenshot (JPEG), POST /api/select-at (mirror click hit-test) and POST /api/key
+/// (keyboard pass-through). The mirror's taps go through /api/tap — see RemoteControlEndpoint.
+/// </summary>
 internal sealed class MirrorEndpoint(
     IMainThreadDispatcher mainThread,
     IActiveInspectorProvider inspectors) : IHttpEndpoint
@@ -34,19 +37,13 @@ internal sealed class MirrorEndpoint(
             return true;
         }
 
-        if (method == HttpVerbs.Post && path == ApiRoutes.Mirror.Tap)
-        {
-            var node = await RequestBody.ReadJson(context).ConfigureAwait(false);
-            var x = node?["x"]?.GetValue<double>() ?? 0;
-            var y = node?["y"]?.GetValue<double>() ?? 0;
-            var ok = await mainThread.RunAsync(() =>
-                inspectors.Current?.RemoteTapAt(new Point(x, y)) ?? false).ConfigureAwait(false);
-            await HttpResponse.WriteOk(context, ok).ConfigureAwait(false);
-            return true;
-        }
-
         if (method == HttpVerbs.Post && path == ApiRoutes.Mirror.Key)
         {
+            if (!MauiInspector.Options.EnableRemoteControl)
+            {
+                await HttpResponse.WriteOk(context, false, 403).ConfigureAwait(false);
+                return true;
+            }
             var node = await RequestBody.ReadJson(context).ConfigureAwait(false);
             var text = node?["text"]?.GetValue<string>();
             var keyName = node?["key"]?.GetValue<string>();

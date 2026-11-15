@@ -27,6 +27,13 @@ internal sealed class BroadcastEndpoint(
             };
             // The heap-dump hand-off aims dotnet-gcdump by platform, emulator/device and diagnostic port.
             HeapDumpTarget.Describe(json, sync.Connected);
+            // Remote-control discovery: names, app id, port and LAN URLs of this device.
+            Features.RemoteControl.DeviceIdentity.Describe(json);
+            var window = mainThread.RunAsync(() =>
+                inspectors.Current is { } inspector ? Features.RemoteControl.DeviceIdentity.Window(inspector) : null);
+            // Never let a busy main thread stall the ping (the startup self-probe waits on it).
+            if (await Task.WhenAny(window, Task.Delay(500)).ConfigureAwait(false) == window && window.Result is { } size)
+                json["window"] = size;
             await HttpResponse.WriteJson(context, json.ToJsonString()).ConfigureAwait(false);
             return true;
         }

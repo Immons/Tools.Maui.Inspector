@@ -11,15 +11,15 @@ internal sealed partial class WindowInspector
     UIView? _highlightPlatform;
     UIView? _panelPlatform;
 
-    private partial void AttachPlatform()
+    private partial void AttachPlatform(bool activationGesture)
     {
         _uiWindow = _window.Handler?.PlatformView as UIWindow;
-        if (_uiWindow == null)
+        if (_uiWindow == null || !activationGesture)
             return;
 
         _recognizer = new UILongPressGestureRecognizer(OnLongPress)
         {
-            MinimumPressDuration = _options.LongPressDuration.TotalSeconds,
+            MinimumPressDuration = ActivationGate.EffectiveDuration(_options.LongPressDuration).TotalSeconds,
             NumberOfTouchesRequired = (nuint)Math.Clamp(_options.LongPressTouchCount, 1, 2),
             CancelsTouchesInView = false,
             DelaysTouchesBegan = false,

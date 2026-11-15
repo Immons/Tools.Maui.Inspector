@@ -36,6 +36,7 @@ internal static class EndpointFactory
             new LogsEndpoint(InspectorServices.Current.Logs),
             new Features.Editing.Web.ResourcesEndpoint(mainThread, InspectorServices.Current.ResourceScopes, xamlChanges, InspectorServices.Current.Cookbook),
             new ChangesEndpoint(xamlChanges, sync),
+            new Features.RemoteControl.RemoteControlEndpoint(mainThread, inspectors, elements),
             new MirrorEndpoint(mainThread, inspectors),
             new MeasureEndpoint(mainThread, inspectors, elements),
             new Features.Cookbook.Web.CookbookEndpoint(mainThread, InspectorServices.Current.Cookbook,

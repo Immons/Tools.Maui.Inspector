@@ -106,8 +106,10 @@ internal sealed partial class WindowInspector
         Hide();
         DetachPlatform();
         _mauiContext = _window.Handler?.MauiContext;
-        if (_mauiContext != null && _options.Activation == InspectorActivation.LongPress)
-            AttachPlatform();
+        // The platform window is resolved for every activation mode — bounds, remote taps and
+        // the web panel's highlight need it even when no gesture opens the on-device panel.
+        if (_mauiContext != null)
+            AttachPlatform(ActivationGate.GestureEnabled(_options.Activation));
     }
 
     public void Detach()
@@ -285,13 +287,18 @@ internal sealed partial class WindowInspector
     /// <summary>Entry point from the platform long-press detectors; point is in window coordinates (dp).</summary>
     internal void OnLongPressDetected(Point windowPoint)
     {
+        // Second line of defence: a detector that outlived a configuration without the gesture
+        // (or a stray recognizer) must never open the panel under Activation.None.
+        if (!ActivationGate.GestureEnabled(_options.Activation))
+            return;
         if (IsShown && _panelLayer != null)
             return;
         _window.Dispatcher.Dispatch(() => Show(windowPoint));
     }
 
     // Platform pieces:
-    private partial void AttachPlatform();
+    /// <summary>Resolves the platform window; installs the activation gesture only when asked.</summary>
+    private partial void AttachPlatform(bool activationGesture);
     private partial void DetachPlatform();
     /// <summary>True when a real platform touch was injected at the window-dp point.</summary>
     private partial bool InjectTapPlatform(Point windowDp);
