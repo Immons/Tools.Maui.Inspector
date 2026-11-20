@@ -46,6 +46,10 @@ export async function run(page) {
 
   // Watch mode, ledger, history, images, holders, bisection switches, exports.
   page.log('holders:', await page.evaluate('[...document.querySelectorAll("#memsuspects .sholder")].map(h => h.textContent).slice(0, 3).join(" | ")'));
+  page.log('watch on at start (default):', await page.evaluate('memSettings && memSettings.watch'));
+  // Watch is on by default now; switch it off and on again so the toggle itself is exercised.
+  await page.evaluate('toggleWatch()');
+  await page.wait(800);
   await page.evaluate('toggleWatch()');
   await page.wait(800);
   page.log('watch on:', await page.evaluate('memSettings && memSettings.watch'), 'button active:', await page.evaluate('document.getElementById("memWatchBtn").classList.contains("active")'));
@@ -61,7 +65,7 @@ export async function run(page) {
   await page.evaluate('setBisection("disconnectHandlersOnPop", true)');
   await page.wait(500);
   page.log('bisection handlers on:', await page.evaluate('memSettings.disconnectHandlersOnPop'));
-  await page.evaluate('setBisection("disconnectHandlersOnPop", false); toggleWatch()');
+  await page.evaluate('setBisection("disconnectHandlersOnPop", false)');
   await page.wait(500);
   page.log('markdown export length:', await page.evaluate('(() => { const orig = HTMLAnchorElement.prototype.click; let size = 0; HTMLAnchorElement.prototype.click = function () { size = this.href.length; }; exportMemoryMarkdown(); HTMLAnchorElement.prototype.click = orig; return size; })()'));
   await page.screenshot(OUT + 'web-memory-v2.png', true);

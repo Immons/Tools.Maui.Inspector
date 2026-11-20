@@ -19,9 +19,9 @@ public sealed class MemoryOptions
     /// <summary>
     /// Watch mode: after every page that leaves a window, a snapshot runs by itself (debounced by
     /// <see cref="WatchDelay"/>) and the navigation ledger records whether the page was collected.
-    /// Each snapshot is a few full collections, so this is off by default; the panel toggles it too.
+    /// Each snapshot is a few full collections, so it only makes sense where the inspector runs at all (Debug / diagnostics). On by default; set to false to opt out, the panel toggles it too. Needs <see cref="TrackInstances"/>. Default: true.
     /// </summary>
-    public bool WatchNavigation { get; set; }
+    public bool WatchNavigation { get; set; } = true;
 
     /// <summary>How long after the last page pop the watch-mode snapshot waits — animations and handlers need a moment. Default: 2 s.</summary>
     public TimeSpan WatchDelay { get; set; } = TimeSpan.FromSeconds(2);

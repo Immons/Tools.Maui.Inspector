@@ -11,5 +11,7 @@
   <ItemGroup>
     <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\InspectorActivation.cs" />
     <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\Activation\ActivationGate.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\MemoryOptions.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\MemoryReport.cs" />
   </ItemGroup>
 </Project>
