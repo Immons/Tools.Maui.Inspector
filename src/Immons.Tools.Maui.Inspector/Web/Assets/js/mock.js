@@ -667,11 +667,44 @@ function importRules() {
 }
 
 // ── History ──────────────────────────────────────────────────────────────────
+// Bytes for the Size column: "1.2 MB"; a pending upload reads "12.0 / 300.0 MB ↑".
+function netSize(n) {
+  if (n == null) return '';
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function netSizeCell(e) {
+  if (e.pending) {
+    if (e.sent != null && e.requestLength) return netSize(e.sent) + ' / ' + netSize(e.requestLength) + ' ↑';
+    if (e.sent != null) return netSize(e.sent) + ' ↑';
+    return e.requestLength ? '0 / ' + netSize(e.requestLength) + ' ↑' : '';
+  }
+  if (e.received != null && e.bytes != null && e.received < e.bytes) return netSize(e.received) + ' / ' + netSize(e.bytes) + ' ↓';
+  if (e.bytes != null) return e.bytes + ' B';
+  if (e.received != null) return netSize(e.received) + ' ↓';
+  return '';
+}
+
+// Rows of calls in flight change every poll (duration, bytes) — those cells are updated in place,
+// so an opened detail row survives a 300 MB upload that takes minutes.
+function netStructure(entries) {
+  return JSON.stringify(entries.map(e => [e.seq, e.status, e.error, e.tag, e.url, !!e.pending, e.hasBody]));
+}
+
 function renderHistory(entries) {
-  const json = JSON.stringify(entries);
-  if (json === netUi.historyJson && netUi.expandedSeq == null) return;
-  if (netUi.expandedSeq != null && json === netUi.historyJson) return;
-  netUi.historyJson = json;
+  const structure = netStructure(entries);
+  if (structure === netUi.historyJson) {
+    for (const e of entries) {
+      const row = document.querySelector('#nethistory .netrow[data-seq="' + e.seq + '"]');
+      if (!row) continue;
+      row.querySelector('.netms').textContent = Math.round(e.ms) + ' ms';
+      row.querySelector('.netsize').textContent = netSizeCell(e);
+    }
+    return;
+  }
+  netUi.historyJson = structure;
 
   const host = document.getElementById('nethistory');
   host.innerHTML = entries.length ? '' : '<div class="netrow netmsg">No requests yet — add MauiInspectorHttpHandler to your HttpClient.</div>';
@@ -682,10 +715,14 @@ function renderHistory(entries) {
     host.appendChild(head);
   }
   for (const e of entries) {
-    const div = el('div', 'netrow');
-    div.dataset.search = [e.method, e.url, e.status, e.error, e.tag, e.time]
+    const div = el('div', 'netrow' + (e.pending ? ' netpend' : ''));
+    div.dataset.seq = e.seq;
+    div.dataset.search = [e.method, e.url, e.status, e.error, e.tag, e.time, e.pending ? 'pending' : null]
       .filter(v => v !== null && v !== undefined).join(' ').toLowerCase();
-    const status = el('span', (e.status >= 200 && e.status < 400) ? 'ok' : 'err', e.error ? e.error : e.status);
+    const status = e.pending
+      ? el('span', 'pend', '⏳')
+      : el('span', (e.status >= 200 && e.status < 400) ? 'ok' : 'err', e.error ? e.error : e.status);
+    if (e.pending) status.title = 'In flight — the row updates until the response arrives';
     const url = el('span', 'neturl', e.url);
     url.title = e.url;
     div.append(
@@ -693,8 +730,8 @@ function renderHistory(entries) {
       status,
       el('span', '', e.method),
       url,
-      el('span', 'netnum', e.ms + ' ms'),
-      el('span', 'netnum', e.bytes != null ? e.bytes + ' B' : ''),
+      el('span', 'netnum netms', Math.round(e.ms) + ' ms'),
+      el('span', 'netnum netsize', netSizeCell(e)),
       el('span', 'nettag', e.tag || ''));
     // Every row opens — a call whose body was not captured (binary, empty, over the size cap)
     // must still be turnable into a mock rule.
@@ -739,7 +776,7 @@ async function toggleDetail(row, e) {
     showView('network');
     showNetworkSub('mocks');
     openRuleForm({
-      method: e.method, urlPattern: e.url, status: e.status,
+      method: e.method, urlPattern: e.url.replace(/\?…$/, ''), status: e.status,
       responseBody: d.response || '', shortCircuit: true, enabled: true,
     });
   };

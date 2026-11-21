@@ -50,6 +50,21 @@ Everything below is the XAML write-back loop.
    recognised by its instance id and watched exactly once. `--app` (repeatable or
    comma-separated) pins explicit URLs; `--src` overrides the source folder.
 
+   **Physical phones and tablets on the Wi-Fi** are found too: next to localhost the tool
+   sweeps the /24 subnet of the Mac's Wi-Fi / Ethernet on ports 9295–9299 (TCP connect,
+   400 ms timeout, in parallel — about 2 s, repeated every minute) and pings only the ports
+   that accept. VPN tunnels, AirDrop, VM bridges, cellular and non-RFC-1918 ranges are left
+   out; `--no-lan-scan` (or `MAUI_INSPECTOR_NO_LAN_SCAN=1`) switches the sweep off. Wi-Fi
+   that isolates clients, another subnet or a VPN on the phone defeat any sweep — name the
+   device instead: `--host 192.168.68.106` (tries ports 9295–9309), `--host 192.168.68.106:9300`
+   or `--url http://192.168.68.106:9295`, repeatable or comma-separated, or the same list in
+   `MAUI_INSPECTOR_HOSTS`. Devices show up with name and model — `KidsTime · iPhone
+   (iPhone18,2) · iOS 27.2 · Device` — just like simulators. `maui-inspector-sync discover`
+   lists everything it finds (and the duplicate URLs of each app) without watching anything.
+   No Bonjour/mDNS: advertising would need `NSBonjourServices` plus the Local Network prompt in
+   every app that ships the inspector, and UDP broadcast needs Apple's multicast entitlement —
+   the sweep needs nothing on the device.
+
    Android plumbing is automatic and collision-aware: an emulator has its own loopback, so
    the tool probes each connected device through temporary `adb forward`s, finds the ports
    its inspectors actually listen on, and maps each onto a **free** host port from the same

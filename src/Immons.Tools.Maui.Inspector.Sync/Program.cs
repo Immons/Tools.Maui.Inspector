@@ -9,7 +9,10 @@ var intervalMs = 1000;
 var fromNow = false;
 var dryRun = false;
 var forwardOnly = false;
+var discoverOnly = false;
 var toolsOnly = false;
+var extraTargets = new List<string>(InspectorDiscovery.SplitList(Environment.GetEnvironmentVariable(InspectorDiscovery.HostsVariable)));
+var lanScan = Environment.GetEnvironmentVariable(InspectorDiscovery.NoLanScanVariable) is not ("1" or "true" or "yes");
 
 for (var i = 0; i < args.Length; i++)
 {
@@ -18,11 +21,20 @@ for (var i = 0; i < args.Length; i++)
         case "forward":
             forwardOnly = true;
             break;
+        case "discover":
+            discoverOnly = true;
+            break;
         case "tools":
             toolsOnly = true;
             break;
         case "--app" when i + 1 < args.Length:
             apps.AddRange(args[++i].Split(',', StringSplitOptions.RemoveEmptyEntries).Select(u => u.TrimEnd('/')));
+            break;
+        case "--host" or "--url" when i + 1 < args.Length:
+            extraTargets.AddRange(InspectorDiscovery.SplitList(args[++i]));
+            break;
+        case "--no-lan-scan":
+            lanScan = false;
             break;
         case "--src" when i + 1 < args.Length:
             src = Path.GetFullPath(args[++i]);
@@ -51,12 +63,18 @@ for (var i = 0; i < args.Length; i++)
                     maui-inspector-sync
 
                 It scans localhost ports 9295-9309 for a running inspector (sets up
-                `adb forward` automatically when adb is available) and watches the current
-                folder. Options for anything non-default:
+                `adb forward` automatically when adb is available), sweeps the local Wi-Fi /
+                Ethernet /24 subnet(s) on ports 9295-9299 for physical phones and tablets, and
+                watches the current folder. Options for anything non-default:
 
                 Just setting up Android port forwarding (no watching):
 
                     maui-inspector-sync forward
+
+                Listing every running inspector — simulators, emulators and phones on the
+                Wi-Fi — with name, model and URL (nothing is watched or changed):
+
+                    maui-inspector-sync discover
 
                 Checking (and installing) the heap-dump tools ahead of the first dump:
 
@@ -68,6 +86,11 @@ for (var i = 0; i < args.Length; i++)
 
                   --app        Base URL(s) of running web inspectors, comma-separated or repeated
                                (skips scanning). One updater serves every device at once.
+                  --host, --url  Extra place(s) to look, next to the scan: a device IP or name
+                               (tries ports 9295-9309), host:port or a full URL; repeated or
+                               comma-separated. Also from the MAUI_INSPECTOR_HOSTS variable.
+                  --no-lan-scan  Skip the subnet sweep (or MAUI_INSPECTOR_NO_LAN_SCAN=1) — localhost,
+                               adb and --host only.
                   --src        Root folder that contains the XAML sources (searched recursively).
                   --dumps      Folder for .gcdump files (default: <temp>/maui-inspector/heapdumps).
                   --no-tool-install  Never install dotnet-gcdump / dotnet-dsrouter automatically.
@@ -123,18 +146,49 @@ if (forwardOnly)
 // No explicit --app: watch every inspector found, and keep adopting new ones as they appear.
 // One app can be reachable on several host ports (old + new adb forwards) — the /api/ping
 // instance nonce keeps each running app watched exactly once.
+if (discoverOnly)
+{
+    var lister = new InspectorDiscovery(http);
+    var subnet = lanScan ? InspectorDiscovery.LocalSubnetHosts() : [];
+    var started = DateTime.UtcNow;
+    var localUrls = Enumerable.Range(9295, 15).Select(p => $"http://localhost:{p}");
+    var namedUrls = extraTargets.SelectMany(t => InspectorDiscovery.ExpandTarget(t, Enumerable.Range(9295, 15).ToArray()));
+    var all = await lister.ProbeAll(localUrls.Concat(namedUrls), TimeSpan.FromMilliseconds(800));
+    if (subnet.Count > 0)
+        all.AddRange(await lister.ScanLan(subnet, InspectorDiscovery.LanPorts, TimeSpan.FromMilliseconds(400)));
+    var elapsed = DateTime.UtcNow - started;
+    if (all.Count == 0)
+    {
+        Console.WriteLine($"no inspectors found ({(subnet.Count > 0 ? $"localhost + {subnet.Count} LAN hosts" : "localhost")}, {elapsed.TotalSeconds:0.0} s)");
+        return 1;
+    }
+    foreach (var app in all.GroupBy(a => a.Instance))
+    {
+        var first = app.First();
+        Console.WriteLine($"{first.Url}  {first.Label}");
+        foreach (var other in app.Skip(1))
+            Console.WriteLine($"    also {other.Url}");
+    }
+    Console.WriteLine($"({all.Select(a => a.Instance).Distinct().Count()} app(s), {(subnet.Count > 0 ? $"localhost + {subnet.Count} LAN hosts" : "localhost")}, {elapsed.TotalSeconds:0.0} s)");
+    return 0;
+}
+
 var watchedInstances = new HashSet<string>();
 var autoDiscover = apps.Count == 0;
 int[] scanPorts = Enumerable.Range(9295, 15).ToArray();
+var discovery = new InspectorDiscovery(http);
+List<System.Net.IPAddress> lanHosts = lanScan && autoDiscover ? InspectorDiscovery.LocalSubnetHosts() : [];
 if (autoDiscover)
 {
-    Console.WriteLine("scanning localhost for running inspectors…");
+    Console.WriteLine(lanHosts.Count > 0
+        ? $"scanning localhost and the local network ({lanHosts.Count} hosts, ports {InspectorDiscovery.LanPorts[0]}-{InspectorDiscovery.LanPorts[^1]}) for running inspectors…"
+        : "scanning localhost for running inspectors…");
 
     var forwards = await AdbForwarder.EnsureForwards(http, scanPorts);
     foreach (var forward in forwards)
         Console.WriteLine($"adb forward: {forward.Serial} device port {forward.DevicePort} → http://localhost:{forward.HostPort}  ({forward.Device})");
 
-    apps.AddRange(await Discover(http, scanPorts, [], watchedInstances));
+    apps.AddRange(await Discover(discovery, scanPorts, extraTargets, lanHosts, [], watchedInstances));
     if (apps.Count == 0)
         Console.WriteLine("none found yet — will keep scanning (start the app with options.EnableWebServer = true)");
 }
@@ -167,7 +221,9 @@ while (true)
                 Console.WriteLine($"adb forward: {forward.Serial} device port {forward.DevicePort} → http://localhost:{forward.HostPort}  ({forward.Device})");
         }
 
-        foreach (var url in await Discover(http, scanPorts, apps, watchedInstances, quiet: true))
+        // The subnet sweep (~1 300 connects) runs every ~60 s; localhost and --host every ~15 s.
+        List<System.Net.IPAddress> sweep = tick % Math.Max(1, 60000 / intervalMs) == 0 ? lanHosts : [];
+        foreach (var url in await Discover(discovery, scanPorts, extraTargets, sweep, apps, watchedInstances, quiet: true))
         {
             apps.Add(url);
             cursors[url] = fromNow ? await CurrentSeq(http, url) : 0;
@@ -255,32 +311,38 @@ static async Task<long> CurrentSeq(HttpClient http, string url)
     }
 }
 
+/// <summary>
+/// localhost first (simulators, adb forwards), then the addresses the user named, then the LAN sweep.
+/// One app is often reachable several ways (a simulator answers on localhost and on the Mac's LAN
+/// address) — the /api/ping instance nonce keeps each app watched exactly once, under its first URL.
+/// </summary>
 static async Task<List<string>> Discover(
-    HttpClient http, int[] ports, IReadOnlyCollection<string> known, HashSet<string> instances, bool quiet = false)
+    InspectorDiscovery discovery, int[] ports, IReadOnlyCollection<string> extraTargets,
+    IReadOnlyCollection<System.Net.IPAddress> lanHosts, IReadOnlyCollection<string> known,
+    HashSet<string> instances, bool quiet = false)
 {
     var found = new List<string>();
-    foreach (var port in ports)
+    var timeout = TimeSpan.FromMilliseconds(quiet ? 400 : 800);
+    var local = ports.Select(p => $"http://localhost:{p}");
+    var named = extraTargets.SelectMany(t => InspectorDiscovery.ExpandTarget(t, ports));
+    var candidates = local.Concat(named).Where(u => !known.Contains(u)).ToList();
+
+    var hits = await discovery.ProbeAll(candidates, timeout);
+    if (lanHosts.Count > 0)
+        hits.AddRange((await discovery.ScanLan(lanHosts, InspectorDiscovery.LanPorts, TimeSpan.FromMilliseconds(400)))
+            .Where(h => !known.Contains(h.Url)));
+
+    foreach (var hit in hits)
     {
-        var baseUrl = $"http://localhost:{port}";
-        if (known.Contains(baseUrl))
-            continue;
-        try
+        if (!instances.Add(hit.Instance))
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(quiet ? 300 : 700));
-            var json = JsonNode.Parse(await http.GetStringAsync($"{baseUrl}/api/ping", cts.Token));
-            var device = json?["device"]?.GetValue<string>() ?? "";
-            var instance = json?["instance"]?.GetValue<string>() ?? baseUrl;
-            if (!instances.Add(instance))
-                continue; // same app already watched through another host port
-            found.Add(baseUrl);
-            if (!quiet)
-                Console.WriteLine($"found inspector at {baseUrl}{(string.IsNullOrEmpty(device) ? "" : $"  ({device})")}");
+            if (!quiet && !found.Contains(hit.Url))
+                Console.WriteLine($"  (also reachable at {hit.Url})");
+            continue; // same app already watched through another URL
         }
-        catch
-        {
-            // nothing on this port
-        }
+        found.Add(hit.Url);
+        if (!quiet)
+            Console.WriteLine($"found inspector at {hit.Url}{(hit.Label.Length == 0 ? "" : $"  ({hit.Label})")}");
     }
     return found;
 }
-

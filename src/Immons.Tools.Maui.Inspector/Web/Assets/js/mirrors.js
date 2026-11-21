@@ -26,15 +26,18 @@ async function scanMirrors() {
     const to = Math.min(parseInt(range[2] || range[1], 10), from + 100);
     for (let port = from; port <= to; port++) ports.add(port);
   }
-  for (const port of [...ports].sort()) {
-    const base = 'http://' + location.hostname + ':' + port;
-    if (base === location.origin) continue;
-    try {
-      const ctl = new AbortController();
-      setTimeout(() => ctl.abort(), 700);
-      const d = await (await fetch(base + '/api/ping', { signal: ctl.signal })).json();
-      found.push({ url: base, label: d.app + ' · ' + d.device });
-    } catch { /* nothing on this port */ }
+  // This page's host on those ports, plus devices on the network the header picker found or was
+  // given ("Scan local network…" / "Add address…") — a physical phone mirrors like a simulator.
+  const urls = [...ports].sort().map(port => 'http://' + location.hostname + ':' + port);
+  for (const hostPort of savedInspectorHosts()) urls.push('http://' + hostPort);
+  const own = await pingInspector(location.origin, 1500);
+  const seen = new Set(own ? [own.instance] : []);
+  const answers = await Promise.all([...new Set(urls)].filter(u => u !== location.origin)
+    .map(async url => ({ url, d: await pingInspector(url, 700) })));
+  for (const { url, d } of answers) {
+    if (!d || seen.has(d.instance)) continue;   // same app reachable twice (localhost + LAN address)
+    seen.add(d.instance);
+    found.push({ url, label: inspectorLabel(d) });
   }
   for (const f of found) {
     const existing = mirrorTargets.find(t => t.url === f.url);

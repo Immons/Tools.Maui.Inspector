@@ -100,8 +100,9 @@ off (403) while keeping the reading endpoints.
 
 - *iOS simulator* — the app listens on the Mac itself: `http://localhost:9295`.
 - *Physical iPhone/iPad on the same Wi-Fi* — `http://<device-ip>:9295`; the IP is in Settings → Wi-Fi,
-  in the app's startup log, or found by `tools/inspector-remote.sh discover 192.168.1` (scans the /24 for
-  `/api/ping`). Over USB instead: `iproxy 9295 9295` (libimobiledevice) and use `localhost`. If the phone
+  in the app's startup log, or found by `maui-inspector-sync discover` / `tools/inspector-remote.sh discover
+  192.168.1` (both sweep the /24 for `/api/ping`). `GET /api/discover` makes a running app do the same sweep of
+  its own subnet and returns `{found:[{url,label,instance}],hosts,ms}` — the panel's *Scan local network…* uses it. Over USB instead: `iproxy 9295 9295` (libimobiledevice) and use `localhost`. If the phone
   does not answer, check the app's *Local Network* permission (iOS asks the first time the app talks to
   the LAN) and that the Wi-Fi does not isolate clients.
 - *Android* — `adb forward tcp:19295 tcp:9295` (or let `maui-inspector-sync` do it), device IP on Wi-Fi.

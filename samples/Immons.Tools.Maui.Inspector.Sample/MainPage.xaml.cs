@@ -54,6 +54,53 @@ public partial class MainPage : ContentPage
 		{
 			// offline is fine — the failed request still shows up in the Network tab
 		}
+
+		// Test hook: HV_UPLOAD_URL streams a 100 MB body there, so the Network tab's pending row
+		// (live duration, bytes sent) can be watched while it uploads.
+		if (Environment.GetEnvironmentVariable("HV_UPLOAD_URL") is { Length: > 0 } uploadUrl)
+		{
+			try
+			{
+				var body = new StreamContent(new DemoUploadStream(100L * 1024 * 1024));
+				body.Headers.ContentLength = 100L * 1024 * 1024;
+				body.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+				using var response = await DemoClient.PutAsync(uploadUrl + "?X-Signature=demo", body);
+			}
+			catch
+			{
+				// the row shows the error
+			}
+		}
+	}
+
+	/// <summary>Non-seekable generated body — nothing exists in memory until the transport reads it.</summary>
+	sealed class DemoUploadStream(long length) : Stream
+	{
+		long _position;
+
+		public override bool CanRead => true;
+		public override bool CanSeek => false;
+		public override bool CanWrite => false;
+		public override long Length => throw new NotSupportedException();
+		public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
+		public override int Read(byte[] buffer, int offset, int count)
+		{
+			var n = (int)Math.Min(count, length - _position);
+			if (n <= 0)
+				return 0;
+			buffer.AsSpan(offset, n).Fill((byte)'x');
+			_position += n;
+			return n;
+		}
+
+		public override void Flush()
+		{
+		}
+
+		public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+		public override void SetLength(long value) => throw new NotSupportedException();
+		public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 	}
 
 	abstract class DemoViewModelBase

@@ -135,9 +135,17 @@ internal static class ApiRoutes
         public const string Back = "/api/back";
     }
 
+    public static class Discover
+    {
+        public const string Lan = "/api/discover";
+    }
+
     public static class Broadcast
     {
         public const string Ping = "/api/ping";
+
+        /// <summary>"/api/ping?probe=1" — the server's own liveness probe: only the nonce, no device lookups.</summary>
+        public const string ProbeQuery = "probe";
         public const string Property = "/api/broadcast/property";
         public const string Action = "/api/broadcast/action";
     }

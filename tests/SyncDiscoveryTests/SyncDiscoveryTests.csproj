@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SyncDiscoveryTests</RootNamespace>
+  </PropertyGroup>
+  <!-- Links maui-inspector-sync's discovery — a plain console runner, no test framework and no real
+       network: a fake connect and a fake HTTP handler stand in for the LAN. `dotnet run` prints
+       PASS/FAIL per check and exits non-zero on any failure. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\InspectorDiscovery.cs" />
+  </ItemGroup>
+</Project>

@@ -29,6 +29,7 @@ internal static class EndpointFactory
             new ElementEndpoint(mainThread, inspectors, elements, elementJson, commands, structure, new AutomationIdBinder(elements, inspectors, xamlChanges)),
             new StructureEndpoint(mainThread, InspectorServices.Current.Catalog, structure, inspectors, elements),
             new BroadcastEndpoint(mainThread, inspectors, InspectorServices.Current.Properties, sync),
+            new DiscoverEndpoint(),
             new HistoryEndpoint(mainThread, history, commands),
             new NetworkEndpoint(InspectorServices.Current.Network),
             new MockRulesEndpoint(InspectorServices.Current.NetworkRules, InspectorServices.Current.Recorder),

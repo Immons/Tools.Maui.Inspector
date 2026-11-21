@@ -21,7 +21,8 @@ nuget.org for the newest published version and turns that into `v0.9.18 → 0.9.
 are behind — a plain GET of a public index, silently skipped when there is no connection.
 
 A **device picker** next to the title points the whole panel — tree, properties, mirror,
-resources, history — at any other running instance it can find (same scan as the Devices view).
+resources, history — at any other running instance it can find (same scan as the Devices view),
+including physical phones on the Wi-Fi via *Scan local network…* or *Add address…* (see [Multi-device](Multi-device.md)).
 Comparing the tablet and the phone rendition of a screen no longer needs two tabs: pick the other
 device, inspect, pick *This device* to come back.
 
