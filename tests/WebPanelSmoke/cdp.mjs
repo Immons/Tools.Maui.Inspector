@@ -5,10 +5,14 @@ import { writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const [,, chrome, url, scriptPath] = process.argv;
-const port = 9333;
+// CDP_PORT / CDP_USER_DATA_DIR: needed with an installed Chrome, which refuses remote debugging
+// on the default profile — and keeps the run away from the user's own browser session.
+const port = Number(process.env.CDP_PORT || 9333);
 const proc = spawn(chrome, [
   '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-  `--remote-debugging-port=${port}`, '--window-size=1400,1000', '--hide-scrollbars', 'about:blank',
+  `--remote-debugging-port=${port}`, '--window-size=1400,1000', '--hide-scrollbars',
+  ...(process.env.CDP_USER_DATA_DIR ? [`--user-data-dir=${process.env.CDP_USER_DATA_DIR}`] : []),
+  'about:blank',
 ], { stdio: ['ignore', 'ignore', 'pipe'] });
 let stderr = '';
 proc.stderr.on('data', d => { stderr += d; });

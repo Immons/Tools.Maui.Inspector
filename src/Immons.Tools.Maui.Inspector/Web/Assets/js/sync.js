@@ -154,6 +154,7 @@ setInterval(async () => {
     }
 
     if (activeView === 'network') refreshNetworkView();
+    else if (activeView === 'signalr') loadSignalR();
     else if (activeView === 'logs') loadLogs();
 
     const cmp = d.compare ?? null;

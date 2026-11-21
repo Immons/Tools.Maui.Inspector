@@ -490,6 +490,50 @@ input.warn { border-color: var(--measure); }
 .memwarn { color: var(--measure); font-size: 12px; padding: 6px 0; }
 .badge { display: inline-block; min-width: 16px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: #e05252; color: #fff; font-size: 10px; line-height: 16px; text-align: center; vertical-align: middle; }
 .badge[hidden] { display: none; }
+/* SignalR view: hub cards and the message timeline (shares .netrow/.netdetail with Network). */
+#srbar select { font-size: 12px; padding: 3px 6px; }
+#srhubs { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
+.srhub { --st: var(--text2); flex: 1 1 340px; max-width: 620px; background: var(--bg2); border: 1px solid var(--divider);
+         border-left: 4px solid var(--st); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.srhub:hover, .srhub.selected { border-color: var(--accent); border-left-color: var(--st); }
+.srhub.st-connected { --st: #4caf50; }
+.srhub.st-connecting, .srhub.st-reconnecting { --st: #e0a852; }
+.srhub.st-disconnected { --st: #e05252; }
+.srhubhead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.srdot { width: 9px; height: 9px; border-radius: 50%; background: var(--st); flex: none; }
+.srhub.st-reconnecting .srdot, .srhub.st-connecting .srdot { animation: connblink 1s infinite; }
+.srstate { color: var(--st); font-weight: 600; }
+.srreconnects { margin-left: auto; color: var(--text2); font-size: 12px; }
+.srreconnects.some { color: #e0a852; font-weight: 600; }
+.srhubmeta, .srurl { color: var(--text2); font: 11px ui-monospace, Menlo, Consolas, monospace; word-break: break-all; margin-top: 2px; }
+.srerr { color: #e08585; font-size: 12px; margin-top: 2px; word-break: break-word; }
+#srevents .srrow { display: grid; align-items: baseline; gap: 0 10px; word-break: normal; cursor: pointer;
+    grid-template-columns: 92px 14px minmax(0, 110px) 118px minmax(0, 220px) 66px minmax(0, 1fr); }
+#srevents .srrow.nethead { cursor: default; }
+#srevents .nethead span { color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+#srevents .srrow:not(.nethead):hover { background: var(--row); }
+#srevents .netmsg { display: block; }
+.srrow .srarrow { font-weight: 700; text-align: center; }
+.srrow.dir-out .srarrow { color: var(--accent); }
+.srrow.dir-in .srarrow { color: #7fd48a; }
+.srrow.srlife { color: var(--text2); }
+.srrow .srhubname, .srrow .srmethod, .srrow .srinfo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.srrow .srkind { color: var(--text2); white-space: nowrap; }
+.srrow .netnum { text-align: right; color: var(--text2); white-space: nowrap; }
+.srrow .netdim { color: var(--text2); }
+.srrow .srms { color: var(--measure); }
+.srrow .err, .srfacts .err, .nethint.err { color: #e08585; }
+.nethint.ok { color: #7fd48a; }
+.srmethod.st-connected, .srmethod.st-reconnected { color: #7fd48a; }
+.srmethod.st-reconnecting, .srmethod.st-connecting, .srmethod.st-attempt { color: #e0a852; }
+.srmethod.st-closed, .srmethod.st-start, .srmethod.st-handshake, .srmethod.st-giving, .srmethod.st-reconnect { color: #e08585; }
+.srfacts { border-collapse: collapse; font-size: 12px; margin-bottom: 4px; }
+.srfacts td { padding: 1px 12px 1px 0; vertical-align: top; word-break: break-all; }
+.srfacts td.k { color: var(--text2); width: 120px; white-space: nowrap; }
+.srpre { max-height: 420px; }
+.srinjectcard { border: 1px solid #e0a852; border-radius: 8px; padding: 10px 12px; margin: 8px 0; background: var(--bg2); max-width: 880px; }
+.srwarn { color: #e0a852; font-size: 12px; margin-bottom: 8px; }
+.srinjectcard .rulegrid select { min-width: 0; width: 100%; }
 .verdict { font-size: 12px; }
 .verdict.alive { color: #e08585; font-weight: 600; }
 .verdict.ok { color: #7fd48a; }

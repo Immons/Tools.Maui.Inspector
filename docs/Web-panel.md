@@ -35,7 +35,7 @@ with the sync tool running, they are
 [written back into your XAML sources](Sync-tool.md#sync-tool-maui-inspector-sync).
 
 The other views are covered in their own chapters: [Cookbook](Styles-and-resources.md#the-design-cookbook) (the app's
-design system as live samples), [Network & mocks](Network-and-mocking.md#network--http-mocking), **Logs** (streams
+design system as live samples), [Network & mocks](Network-and-mocking.md#network--http-mocking), [SignalR](SignalR.md) (hubs and their messages), **Logs** (streams
 `ILogger` output) and [Devices](Multi-device.md#multi-device) for multi-device hot reload.
 
 ## On the device

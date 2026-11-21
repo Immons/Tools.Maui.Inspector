@@ -13,6 +13,7 @@
 
 **Diagnosing**
 - [Network & HTTP mocking](Network-and-mocking)
+- [SignalR](SignalR)
 - [Memory & leaks](Memory-and-leaks)
 
 **Automating**

@@ -31,6 +31,8 @@
 	<ItemGroup>
 		<!-- The storage abstraction is internal on purpose: the SQLite backend is ours, not public API. -->
 		<InternalsVisibleTo Include="Immons.Tools.Maui.Inspector.Persistency" />
+		<!-- The SignalR add-on feeds the core's SignalR monitor; the monitor is not public API either. -->
+		<InternalsVisibleTo Include="Immons.Tools.Maui.Inspector.SignalR" />
 	</ItemGroup>
 
 	<ItemGroup>

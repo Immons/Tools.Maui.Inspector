@@ -89,6 +89,26 @@ app on every connected device, matched by XAML source identity with the name/pag
 
 **Logs** — `GET /api/logs` returns what `builder.Logging.AddMauiInspector()` collected.
 
+**SignalR** — hubs registered with `.WithMauiInspector("name")` (package
+`Immons.Tools.Maui.Inspector.SignalR`, see [SignalR](SignalR.md)). Payloads are already masked and
+cut to `MaxPayloadChars` when they are recorded; the API never sees the originals.
+
+| Method & path | What it does |
+| --- | --- |
+| `GET /api/signalr` | `{paused, lastSeq, hubs: [...]}` — per hub: `name`, `state` (`Connecting` · `Connected` · `Reconnecting` · `Disconnected`), `stateSince` (unix ms), `connectionId`, `url`, `protocol`, `transport`, `reconnects`, `attempt`, `lastError`, `instances`, `messagesIn/Out`, `bytesIn/Out`, `lastPingIn/Out`, `events`, `capacity`, `dropped`, `injectBlocker` (null = injection possible) |
+| `GET /api/signalr/events` | `?hub=` (exact), `since=` (sequence number, exclusive), `method=` (substring, case-insensitive), `limit=` (default 500, max 5000 — the newest win). Returns `{lastSeq, events: [...]}` oldest first; each event: `seq`, `hub`, `time` (unix ms), `dir` (`out` = client → server, `in` = server → client, `""` = lifecycle), `kind` (`invocation` · `stream-invocation` · `stream-item` · `completion` · `cancel` · `ping` · `close` · `ack` · `sequence` · `state` · `retry` · `error`), and when known `method`, `invocationId`, `bytes`, `ms` (invoke → completion), `state`, `attempt`, `error`, `connectionId`, `injected`, `truncated`, `preview` (first 140 characters of the payload) |
+| `GET /api/signalr/event?seq=N` | One event with its full (masked, size-capped) `payload`; 404 when it was dropped from the buffer |
+| `POST /api/signalr/pause` | `{on}` — stop/resume recording messages; state changes and counters keep going. Without `on` it toggles |
+| `POST /api/signalr/clear` | `{hub?}` — drop the events and counters of one hub, or of all |
+| `POST /api/signalr/inject` | `{hub, method, args}` — **developer tool**: deliver `method(args…)` to the app's `On(...)` handler as if the server had sent it. `args` is a JSON array (or its text); a single value is one argument. 200 `{ok:true}` once queued, 400 `{ok:false, error}` when the hub is unknown, not connected, uses a binary protocol or stateful reconnect, or the JSON is invalid |
+
+```bash
+B=http://localhost:9295
+curl -s $B/api/signalr | jq '.hubs[] | {name, state, reconnects}'
+curl -s "$B/api/signalr/events?hub=chat&method=SendMessage&since=0" | jq '.events[] | {dir, kind, method, bytes, ms}'
+curl -s -X POST $B/api/signalr/inject -d '{"hub":"chat","method":"ReceiveMessage","args":[{"text":"hi","from":"panel"}]}'
+```
+
 ## Remote control
 
 The input endpoints let a script — a shell loop, a test runner, an AI agent — operate the app the way

@@ -34,6 +34,7 @@ internal static class EndpointFactory
             new MockRulesEndpoint(InspectorServices.Current.NetworkRules, InspectorServices.Current.Recorder),
             new InterceptEndpoint(InspectorServices.Current.Breakpoints),
             new LogsEndpoint(InspectorServices.Current.Logs),
+            new Features.SignalR.SignalREndpoint(InspectorServices.Current.SignalR),
             new Features.Editing.Web.ResourcesEndpoint(mainThread, InspectorServices.Current.ResourceScopes, xamlChanges, InspectorServices.Current.Cookbook),
             new ChangesEndpoint(xamlChanges, sync),
             new Features.RemoteControl.RemoteControlEndpoint(mainThread, inspectors, elements),

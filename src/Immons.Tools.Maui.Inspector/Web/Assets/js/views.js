@@ -1,7 +1,7 @@
 // Top-level views: Inspector (tree + properties), Cookbook (style gallery), full-screen
-// Network (requests + mocks), Logs, Memory (leak snapshots) and Devices (multi-device targets).
-// Inspector-only tools hide elsewhere.
-const VIEWS = ['inspector', 'cookbook', 'network', 'logs', 'memory', 'devices'];
+// Network (requests + mocks), SignalR (hubs + messages), Logs, Memory (leak snapshots) and
+// Devices (multi-device targets). Inspector-only tools hide elsewhere.
+const VIEWS = ['inspector', 'cookbook', 'network', 'signalr', 'logs', 'memory', 'devices'];
 
 function showView(name) {
   if (activeView === 'memory' && name !== 'memory') stopMemory();
@@ -15,6 +15,7 @@ function showView(name) {
   }
   document.getElementById('globalbar').hidden = name !== 'inspector';
   if (name === 'network') refreshNetworkView();
+  else if (name === 'signalr') loadSignalR();
   else if (name === 'cookbook') showCookbook();
   else if (name === 'logs') loadLogs();
   else if (name === 'memory') showMemory();

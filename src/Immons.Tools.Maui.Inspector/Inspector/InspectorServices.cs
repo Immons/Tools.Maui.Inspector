@@ -36,7 +36,8 @@ internal sealed class InspectorServices(
     INavigationLedger ledger,
     INavigationWatcher navigation,
     ILeakNotifier leaks,
-    IServiceLifetimes lifetimes)
+    IServiceLifetimes lifetimes,
+    ISignalRMonitor signalR)
 {
     static InspectorServices? _current;
 
@@ -104,4 +105,7 @@ internal sealed class InspectorServices(
     public ILeakNotifier Leaks { get; } = leaks;
 
     public IServiceLifetimes Lifetimes { get; } = lifetimes;
+
+    /// <summary>Hubs and messages fed by the Immons.Tools.Maui.Inspector.SignalR add-on.</summary>
+    public ISignalRMonitor SignalR { get; } = signalR;
 }
