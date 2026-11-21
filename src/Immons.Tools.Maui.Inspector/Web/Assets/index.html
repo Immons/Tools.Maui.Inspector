@@ -23,6 +23,7 @@
     <button id="nav-inspector" class="tabbtn active" onclick="showView('inspector')">🧭 Inspector</button>
     <button id="nav-cookbook" class="tabbtn" onclick="showView('cookbook')" title="Design cookbook — the app's styles, controls, colors, fonts and images as live samples">📚 Cookbook</button>
     <button id="nav-network" class="tabbtn" onclick="showView('network')" title="HTTP requests, breakpoints, mock rules">🌐 Network</button>
+    <button id="nav-signalr" class="tabbtn" onclick="showView('signalr')" title="SignalR hubs — connection state, reconnects and messages in both directions (WithMauiInspector on the HubConnectionBuilder)">📡 SignalR<span id="srbadge" class="badge" hidden></span></button>
     <button id="nav-logs" class="tabbtn" onclick="showView('logs')" title="ILogger output">📋 Logs</button>
     <button id="nav-memory" class="tabbtn" onclick="showView('memory')" title="Memory — live readings, leak snapshots, heap dumps">🧠 Memory<span id="membadge" class="badge" hidden></span></button>
     <button id="nav-devices" class="tabbtn" onclick="showView('devices')" title="Multi-device hot reload targets">🖧 Devices</button>
@@ -118,6 +119,20 @@
     </div>
     <div id="subview-requests"></div>
     <div id="subview-mocks" hidden></div>
+  </div>
+  <div id="view-signalr" class="view fullview" hidden>
+    <div id="srbar" class="netbar">
+      <select id="srhubfilter" title="Show one hub's events" onchange="srFilterChanged()"><option value="">all hubs</option></select>
+      <input type="text" id="srmethod" placeholder="Filter method, kind, text…" oninput="srFilterChanged()">
+      <label class="bptoggle" title="Keep-alive pings are always counted; this shows them on the timeline too"><input type="checkbox" id="srpings" onchange="srFilterChanged()"> pings</label>
+      <button id="srPauseBtn" class="tabbtn" onclick="srTogglePause()" title="Stop recording messages (state changes and counters keep going)">⏸ Pause</button>
+      <button class="tabbtn" onclick="srClear()" title="Drop the recorded events and counters (of the selected hub, or all)">🧹 Clear</button>
+      <button id="srInjectBtn" class="tabbtn" onclick="srToggleInject()" title="Developer tool: simulate a server → client call">💉 Inject</button>
+      <span id="srhint" class="nethint"></span>
+    </div>
+    <div id="srinject" hidden></div>
+    <div id="srhubs"></div>
+    <div id="srevents"></div>
   </div>
   <div id="view-logs" class="view fullview" hidden><div id="loglist"></div></div>
 
@@ -229,6 +244,7 @@
 <script src="/js/props.js"></script>
 <script src="/js/tabs.js"></script>
 <script src="/js/mock.js"></script>
+<script src="/js/signalr.js"></script>
 <script src="/js/structure.js"></script>
 <script src="/js/resources.js"></script>
 <script src="/js/cookbook.js"></script>

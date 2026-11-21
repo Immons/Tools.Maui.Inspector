@@ -11,6 +11,9 @@ public static class MauiInspectorBuilderExtensions
     /// </summary>
     public static MauiAppBuilder UseMauiInspector(this MauiAppBuilder builder, Action<MauiInspectorOptions>? configure = null)
     {
+        // Add-ons (SignalR) attach only to an enabled inspector — without this call they stay inert.
+        MauiInspector.IsEnabled = true;
+
         // Must run before any XAML page is inflated so MAUI records element source locations.
         Features.XamlSync.XamlSource.EnableDiagnostics();
 

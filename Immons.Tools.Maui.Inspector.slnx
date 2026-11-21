@@ -1,11 +1,13 @@
 <Solution>
   <Folder Name="/samples/">
     <Project Path="samples/Immons.Tools.Maui.Inspector.Sample/Immons.Tools.Maui.Inspector.Sample.csproj" />
+    <Project Path="samples/Immons.Tools.Maui.Inspector.SignalRServer/Immons.Tools.Maui.Inspector.SignalRServer.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Immons.Tools.Maui.Inspector.Diagnostics/Immons.Tools.Maui.Inspector.Diagnostics.csproj" />
     <Project Path="src/Immons.Tools.Maui.Inspector.Extensions/Immons.Tools.Maui.Inspector.Extensions.csproj" />
     <Project Path="src/Immons.Tools.Maui.Inspector.Persistency/Immons.Tools.Maui.Inspector.Persistency.csproj" />
+    <Project Path="src/Immons.Tools.Maui.Inspector.SignalR/Immons.Tools.Maui.Inspector.SignalR.csproj" />
     <Project Path="src/Immons.Tools.Maui.Inspector.Sync/Immons.Tools.Maui.Inspector.Sync.csproj" />
     <Project Path="src/Immons.Tools.Maui.Inspector/Immons.Tools.Maui.Inspector.csproj" />
   </Folder>
@@ -17,5 +19,6 @@
     <Project Path="tests/ServerRecoveryTests/ServerRecoveryTests.csproj" />
     <Project Path="tests/SyncDiscoveryTests/SyncDiscoveryTests.csproj" />
     <Project Path="tests/NetworkCaptureTests/NetworkCaptureTests.csproj" />
+    <Project Path="tests/SignalRTests/SignalRTests.csproj" />
   </Folder>
 </Solution>

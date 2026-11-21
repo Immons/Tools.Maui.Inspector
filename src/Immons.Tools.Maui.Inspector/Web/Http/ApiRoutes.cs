@@ -101,6 +101,16 @@ internal static class ApiRoutes
         public const string Abort = "/api/intercept/abort";
     }
 
+    public static class SignalR
+    {
+        public const string Hubs = "/api/signalr";
+        public const string Events = "/api/signalr/events";
+        public const string Event = "/api/signalr/event";
+        public const string Clear = "/api/signalr/clear";
+        public const string Pause = "/api/signalr/pause";
+        public const string Inject = "/api/signalr/inject";
+    }
+
     public static class Logs
     {
         public const string List = "/api/logs";

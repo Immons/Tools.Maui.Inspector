@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SignalRTests</RootNamespace>
+  </PropertyGroup>
+  <!-- Links the MAUI-free SignalR sources — the core's monitor/buffer/masking/endpoint and the
+       add-on's protocol, transport and reconnect wrappers — and runs them against a real
+       in-process ASP.NET Core SignalR server. A plain console runner, no test framework:
+       `dotnet run` prints PASS/FAIL per check and exits non-zero on any failure. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.15" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\SignalR\*.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Web\Http\*.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.SignalR\*.cs"
+             Exclude="..\..\src\Immons.Tools.Maui.Inspector.SignalR\MauiInspectorSignalRExtensions.cs" />
+  </ItemGroup>
+</Project>

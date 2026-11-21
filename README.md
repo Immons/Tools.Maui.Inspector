@@ -66,6 +66,7 @@ The full guide is in the [wiki](https://github.com/Immons/Tools.Maui.Inspector/w
 | [WYSIWYG editor](https://github.com/Immons/Tools.Maui.Inspector/wiki/WYSIWYG-editor) | Structure editing, the toolbox, snap lines and the grid designer |
 | [Sync tool](https://github.com/Immons/Tools.Maui.Inspector/wiki/Sync-tool) | `maui-inspector-sync`: XAML write-back, heap dumps, device port forwarding |
 | [Network & HTTP mocking](https://github.com/Immons/Tools.Maui.Inspector/wiki/Network-and-mocking) | Recording, mock rules, scenarios, breakpoints, offline replay |
+| [SignalR](https://github.com/Immons/Tools.Maui.Inspector/wiki/SignalR) | Hub state and reconnects, messages in both directions, masked payloads, simulated server calls |
 | [Memory & leaks](https://github.com/Immons/Tools.Maui.Inspector/wiki/Memory-and-leaks) | Live readings, leak snapshots, heap dumps with root paths |
 | [Multi-device](https://github.com/Immons/Tools.Maui.Inspector/wiki/Multi-device) | One panel driving several simulators, emulators and phones |
 | [UI tests](https://github.com/Immons/Tools.Maui.Inspector/wiki/UI-tests) | Maestro and Appium: AutomationIds, mocks and a leak gate |

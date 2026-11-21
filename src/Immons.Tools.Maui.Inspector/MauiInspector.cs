@@ -14,6 +14,12 @@ public static class MauiInspector
 
     internal static MauiInspectorOptions Options { get; } = new();
 
+    /// <summary>
+    /// Set by <see cref="MauiInspectorBuilderExtensions.UseMauiInspector"/>. Add-ons that hook
+    /// into app infrastructure (the SignalR hub inspection) do nothing while it is false.
+    /// </summary>
+    internal static bool IsEnabled { get; set; }
+
     /// <summary>Inspector of the current window (used by the embedded web server).</summary>
     internal static WindowInspector? ActiveInspector => Resolve(null);
 

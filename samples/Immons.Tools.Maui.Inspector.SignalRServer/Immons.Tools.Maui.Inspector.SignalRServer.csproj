@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<!-- Tiny SignalR server for the sample app's SignalR page (dotnet run in this folder).
+	     Listens on http://0.0.0.0:5299 (iOS simulator: localhost, Android emulator: 10.0.2.2). -->
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+		<RootNamespace>SampleSignalRServer</RootNamespace>
+	</PropertyGroup>
+
+</Project>

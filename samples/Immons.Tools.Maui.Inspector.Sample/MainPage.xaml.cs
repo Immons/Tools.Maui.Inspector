@@ -166,6 +166,8 @@ public partial class MainPage : ContentPage
 
 	async void OnLeakClicked(object? sender, EventArgs e) => await Navigation.PushAsync(new LeakDemo.LeakyPage());
 
+	async void OnSignalRClicked(object? sender, EventArgs e) => await Navigation.PushAsync(new SignalRDemo.SignalRDemoPage());
+
 	/// <summary>
 	/// The overlay case: a layer added to this page and removed again — never a Page, so the
 	/// inspector only learns about it because the app reports it.

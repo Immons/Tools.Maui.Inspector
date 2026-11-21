@@ -22,6 +22,7 @@ app prints the panel's URL.
 ### Diagnosing
 
 - **[Network & HTTP mocking](Network-and-mocking.md)** — recording, rules, scenarios, breakpoints, offline replay
+- **[SignalR](SignalR.md)** — hub state, reconnects, messages both ways, masked payloads, simulated server calls
 - **[Memory & leaks](Memory-and-leaks.md)** — live readings, leak snapshots, heap dumps with root paths
 
 ### Automating

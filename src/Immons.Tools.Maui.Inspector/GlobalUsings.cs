@@ -21,6 +21,7 @@ global using Immons.Tools.Maui.Inspector.Features.Properties;
 global using Immons.Tools.Maui.Inspector.Features.Properties.Sections;
 global using Immons.Tools.Maui.Inspector.Features.Properties.Ui;
 global using Immons.Tools.Maui.Inspector.Features.Properties.Web;
+global using Immons.Tools.Maui.Inspector.Features.SignalR;
 global using Immons.Tools.Maui.Inspector.Features.Structure;
 global using Immons.Tools.Maui.Inspector.Features.VisualTree;
 global using Immons.Tools.Maui.Inspector.Features.VisualTree.Ui;
