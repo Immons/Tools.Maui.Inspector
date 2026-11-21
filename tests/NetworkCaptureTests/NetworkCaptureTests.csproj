@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>NetworkCaptureTests</RootNamespace>
+  </PropertyGroup>
+  <!-- Links the MAUI-free Network tab pipeline (interceptor, body capture, log) — a plain console
+       runner, no test framework and no network: fake inner handlers play NSUrlSessionHandler
+       (reads ReadAsStreamAsync) and SocketsHttpHandler (CopyToAsync). `dotnet run` prints PASS/FAIL
+       per check and exits non-zero on any failure. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Shared\RingLog.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\HttpBodyCapture.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\ObservedContent.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\NetworkLog.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\INetworkLog.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\NetworkInterceptor.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\INetworkInterceptor.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\IMockRules.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\MockRule.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\IBreakpointGate.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\InterceptedCall.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\NetworkInspection\IScenarioRecorder.cs" />
+  </ItemGroup>
+</Project>

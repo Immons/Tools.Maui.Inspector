@@ -180,6 +180,8 @@ input.warn { border-color: var(--measure); }
 .netrow, .logrow { font: 12px ui-monospace, Menlo, Consolas, monospace;
                    padding: 3px 0; border-bottom: 1px solid var(--divider); word-break: break-all; }
 .netrow .ok { color: #7fd48a; } .netrow .err { color: #e08585; }
+.netrow .pend { color: var(--measure); }
+#nethistory .netrow.netpend .neturl { font-style: italic; }
 /* Requests history is a real table: equal columns across rows, URL gets the rest. */
 #nethistory .netrow { display: grid; align-items: baseline; gap: 0 12px; word-break: normal;
     grid-template-columns: 66px 38px 52px minmax(0, 1fr) 76px 72px minmax(0, 220px); }

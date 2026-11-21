@@ -62,6 +62,18 @@ response bodies (click a row to expand). Breakpoints pause matching requests or 
 can edit the body or status and continue — Proxyman-style, but inside the process, so TLS and
 certificate pinning are none of your concern.
 
+A call shows up **the moment it is sent**, as a pending row (⏳, URL without its query — presigned
+storage URLs carry their signature there — live duration, and for uploads the bytes handed to the
+transport against `Content-Length`, e.g. `120.0 MB / 300.0 MB ↑`); it turns into a normal row when the
+response headers arrive, and a download keeps counting `↓` while the app reads it. Bodies never cost
+the call memory: only textual bodies (JSON, text, XML, form) **known** to fit under
+`MaxCapturedBodyBytes` are buffered; a textual body of unknown length (chunked, a stream) is copied
+while the transport moves it; a body without a Content-Type is treated as binary and never read;
+a known-large one is not read at all. A breakpoint on a body of unknown length reads at most the cap
+ahead. Note on iOS: `NSUrlSessionHandler` with its default `MaxInputInMemory` (unlimited) reads a
+request body into memory itself before uploading — the row then shows 100 % sent at once. Set
+`MaxInputInMemory` (e.g. 1 MB) to stream uploads; the counter then follows the real transfer.
+
 **Mocks — rules, scenarios and recording**
 
 ![Mock rules and scenarios](web-mocks.png)
