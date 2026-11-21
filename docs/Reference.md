@@ -95,6 +95,13 @@ it is what usually breaks:
   per-process nonce every answer carries.
 - **A connection that hangs instead of being refused** — an iOS simulator app suspended in the
   background still accepts connections but never answers. Foreground it, or kill the stale app.
+- **A physical iPhone that stops answering after a trip to the background** (fixed in 0.9.22) — iOS
+  reclaims a suspended app's listening socket; the port kept completing TCP handshakes (`nc -z` says
+  open) while HTTP requests timed out. The server now rebuilds the socket on the same port when the app
+  returns to the foreground and when the network comes back, and a watchdog (`/api/ping?probe=1` over
+  loopback every 15 s while the app is active) rebuilds it after two misses. The app log shows
+  `restarting the web inspector listener…`; `GET /api/ping` → `listenerRestarts` counts the rebuilds.
+  While the app is in the background nothing answers — that part is iOS and cannot be helped.
 - **iOS simulator** — bring the app to the foreground: iOS suspends a backgrounded app together
   with its HTTP server, so the panel shows `app in background` and requests time out.
 - **Physical devices** — `localhost` won't do; use the device's IP (Android additionally needs

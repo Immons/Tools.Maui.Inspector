@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ServerRecoveryTests</RootNamespace>
+  </PropertyGroup>
+  <!-- Links the MAUI-free listener supervisor and recovery policy — a plain console runner, no test
+       framework and no sockets: fake listeners stand in for HttpListener. `dotnet run` prints
+       PASS/FAIL per check and exits non-zero on any failure. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Web\Hosting\ListenerSupervisor.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Web\Hosting\ServerRecoveryPolicy.cs" />
+  </ItemGroup>
+</Project>

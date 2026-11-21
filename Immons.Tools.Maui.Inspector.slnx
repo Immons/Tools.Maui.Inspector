@@ -14,5 +14,6 @@
     <Project Path="tests/ActivationTests/ActivationTests.csproj" />
     <Project Path="tests/PatcherTests/PatcherTests.csproj" />
     <Project Path="tests/RemoteControlTests/RemoteControlTests.csproj" />
+    <Project Path="tests/ServerRecoveryTests/ServerRecoveryTests.csproj" />
   </Folder>
 </Solution>

@@ -18,12 +18,22 @@ internal sealed class BroadcastEndpoint(
     {
         if (method == HttpVerbs.Get && path == ApiRoutes.Broadcast.Ping)
         {
+            // The listener's self-probe (startup, foreground, watchdog) needs the nonce only —
+            // and must not wait on the main thread or enumerate network interfaces every 15 s.
+            if (context.Request.QueryString[ApiRoutes.Broadcast.ProbeQuery] != null)
+            {
+                await HttpResponse.WriteJson(context,
+                    new JsonObject { ["instance"] = RemoteServer.InstanceId }.ToJsonString()).ConfigureAwait(false);
+                return true;
+            }
+
             var json = new JsonObject
             {
                 ["app"] = AppInfo.Current.Name,
                 ["device"] = TreeJsonBuilder.DeviceDescription(),
                 ["instance"] = RemoteServer.InstanceId,
                 ["version"] = Shared.PackageVersion.Current,
+                ["listenerRestarts"] = RemoteServer.Restarts,
             };
             // The heap-dump hand-off aims dotnet-gcdump by platform, emulator/device and diagnostic port.
             HeapDumpTarget.Describe(json, sync.Connected);
