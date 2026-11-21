@@ -9,7 +9,7 @@
 <header>
   <div id="headtop">
     <h1>MAUI Inspector</h1>
-    <select id="devicepick" title="Which device this whole panel inspects" onchange="switchDevice(this.value)" onfocus="refreshDevicePick()">
+    <select id="devicepick" title="Which device this whole panel inspects" onchange="onDevicePick(this)" onfocus="refreshDevicePick()">
       <option value="">This device</option>
     </select>
     <span class="ver" id="ver"></span>
@@ -211,7 +211,8 @@
     <div class="devicesintro">Edits made in this panel are mirrored to every checked target —
       the same app running on other simulators, emulators or physical devices (matched by XAML source identity).</div>
     <div id="mirrorsbar">
-      <button onclick="scanMirrors()">🔍 Scan localhost</button>
+      <button onclick="scanMirrors()" title="localhost ports + devices found by the header picker's network scan">🔍 Scan</button>
+      <button onclick="scanLocalNetwork().then(scanMirrors)" title="Sweep the Wi-Fi /24 subnet on ports 9295-9299 for physical devices">📶 Scan network</button>
       <button id="mirrorclean" onclick="removeUnreachableMirrors()" hidden
               title="Drop targets that no longer answer — ports get reused between runs"></button>
       <input type="text" id="mirroraddr" placeholder="host:port · or ports to scan: 9500,9600 / 9400-9420">

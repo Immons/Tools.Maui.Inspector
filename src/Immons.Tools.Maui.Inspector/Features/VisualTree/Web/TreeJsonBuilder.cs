@@ -10,7 +10,7 @@ internal sealed class TreeJsonBuilder(IActiveInspectorProvider inspectors, IElem
         var root = new JsonObject();
         var rootsArray = new JsonArray();
         root["roots"] = rootsArray;
-        root["device"] = DeviceDescription();
+        root["device"] = DeviceDescription(withModel: true);
         root["port"] = Immons.Tools.Maui.Inspector.Web.Hosting.RemoteServer.Port;
         root["adaptive"] = AdaptiveAvailable.Value;
 
@@ -40,17 +40,29 @@ internal sealed class TreeJsonBuilder(IActiveInspectorProvider inspectors, IElem
         }
     });
 
-    internal static string DeviceDescription()
+    /// <summary>
+    /// "iPhone 18 Pro · iOS 27.2 · Simulator". <paramref name="withModel"/> adds the model to a physical
+    /// device ("iPhone (iPhone18,2) · iOS 27.2 · Device") — the ping's plain <c>device</c> stays without
+    /// it, because panels key per-device browser storage on that string.
+    /// </summary>
+    internal static string DeviceDescription(bool withModel = false)
     {
         try
         {
             var device = DeviceInfo.Current;
-            var description = $"{device.Name} · {device.Platform} {device.VersionString}";
             if (device.DeviceType == DeviceType.Virtual)
-                description += device.Platform == DevicePlatform.iOS || device.Platform == DevicePlatform.MacCatalyst
-                    ? " · Simulator"
-                    : " · Emulator";
-            return description;
+                return $"{device.Name} · {device.Platform} {device.VersionString} · "
+                       + (device.Platform == DevicePlatform.iOS || device.Platform == DevicePlatform.MacCatalyst ? "Simulator" : "Emulator");
+            if (!withModel)
+                return $"{device.Name} · {device.Platform} {device.VersionString}";
+
+            // Physical: since iOS 16 the name is just "iPhone"/"iPad" without a special entitlement,
+            // so the model identifier (iPhone18,2) is what tells two phones apart in the device lists.
+            var model = device.Model ?? "";
+            var name = model.Length > 0 && !string.Equals(model, device.Name, StringComparison.OrdinalIgnoreCase)
+                ? $"{device.Name} ({model})"
+                : device.Name;
+            return $"{name} · {device.Platform} {device.VersionString} · Device";
         }
         catch
         {

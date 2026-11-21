@@ -135,6 +135,11 @@ internal static class ApiRoutes
         public const string Back = "/api/back";
     }
 
+    public static class Discover
+    {
+        public const string Lan = "/api/discover";
+    }
+
     public static class Broadcast
     {
         public const string Ping = "/api/ping";

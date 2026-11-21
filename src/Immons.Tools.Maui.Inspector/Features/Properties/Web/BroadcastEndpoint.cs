@@ -35,6 +35,8 @@ internal sealed class BroadcastEndpoint(
                 ["version"] = Shared.PackageVersion.Current,
                 ["listenerRestarts"] = RemoteServer.Restarts,
             };
+            // What device lists show (panel picker, mirrors, maui-inspector-sync): physical devices with their model.
+            json["label"] = $"{AppInfo.Current.Name} · {TreeJsonBuilder.DeviceDescription(withModel: true)}";
             // The heap-dump hand-off aims dotnet-gcdump by platform, emulator/device and diagnostic port.
             HeapDumpTarget.Describe(json, sync.Connected);
             // Remote-control discovery: names, app id, port and LAN URLs of this device.
