@@ -20,5 +20,6 @@
     <Project Path="tests/SyncDiscoveryTests/SyncDiscoveryTests.csproj" />
     <Project Path="tests/NetworkCaptureTests/NetworkCaptureTests.csproj" />
     <Project Path="tests/SignalRTests/SignalRTests.csproj" />
+    <Project Path="tests/MauiCompatTests/MauiCompatTests.csproj" />
   </Folder>
 </Solution>

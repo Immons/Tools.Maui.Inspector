@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MauiCompatTests</RootNamespace>
+    <!-- Plain console app: the version the packages are built against, unless overridden
+         (`-p:MauiVersion=11.0.10 -p:TargetFramework=net11.0` on a .NET 11 SDK runs the same checks on MAUI 11). -->
+    <MauiVersion Condition="'$(MauiVersion)' == ''">10.0.110</MauiVersion>
+  </PropertyGroup>
+  <!-- Code that touches MAUI APIs whose shape differs between MAUI 10 and 11, plus the slow-reading
+       throttle of the Android memory metrics — a plain console runner, no test framework:
+       `dotnet run` prints PASS/FAIL per check and exits non-zero on any failure. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <Using Include="Microsoft.Maui.Controls" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\Cookbook\VisualStates.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\Memory\Metrics\ThrottledProbe.cs" />
+  </ItemGroup>
+</Project>

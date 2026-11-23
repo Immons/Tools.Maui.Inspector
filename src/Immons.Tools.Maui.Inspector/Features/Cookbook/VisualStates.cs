@@ -10,7 +10,7 @@ internal static class VisualStates
             return names;
         try
         {
-            foreach (var group in VisualStateManager.GetVisualStateGroups(sample))
+            foreach (var group in GroupsOf(sample))
             {
                 foreach (var state in group.States)
                 {
@@ -25,4 +25,14 @@ internal static class VisualStates
         }
         return names;
     }
+
+    /// <summary>
+    /// Read through the attached property, not <c>VisualStateManager.GetVisualStateGroups</c>: its
+    /// return type changed from <c>IList&lt;VisualStateGroup&gt;</c> (MAUI 10) to
+    /// <c>VisualStateGroupList</c> (MAUI 11), so a call compiled against 10 is a missing method on 11
+    /// (MissingMethodException on CoreCLR/Mono, "will always throw" under NativeAOT). The property
+    /// and the list type are the same in both.
+    /// </summary>
+    internal static IEnumerable<VisualStateGroup> GroupsOf(VisualElement sample) =>
+        sample.GetValue(VisualStateManager.VisualStateGroupsProperty) as IEnumerable<VisualStateGroup> ?? [];
 }
