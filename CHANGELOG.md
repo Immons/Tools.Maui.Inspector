@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.10.1
 
 - MAUI 11: the Cookbook's visual-state chips work again. `VisualStateManager.GetVisualStateGroups` returns `VisualStateGroupList` in MAUI 11 instead of `IList<VisualStateGroup>`, so the call compiled against MAUI 10 was a missing method there — `MissingMethodException` on CoreCLR/Mono, "will always throw" from ILC under NativeAOT. The groups are now read through `VisualStateManager.VisualStateGroupsProperty`, which has the same shape in both. New `tests/MauiCompatTests` checks the names on MAUI 10 and 11 and that the call does not come back.
 - Android: `Debug.getMemoryInfo` (PSS and graphics memory of the Memory view) no longer runs on the UI thread. It was read inside snapshot classification and the navigation ledger, both of which run on the main thread, and with large mappings or right after the snapshot's collections it can take hundreds of milliseconds — an ANR dump caught the UI thread inside it. Reads are still at most one per 5 s and one at a time; from the main thread they go to the thread pool (the caller gets the previous reading), elsewhere they run in place. Snapshots take their memory reading before hopping to the main thread. The read is a named trace section (`MauiInspector.getMemoryInfo`) in systrace/Perfetto.
