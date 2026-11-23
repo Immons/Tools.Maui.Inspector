@@ -14,7 +14,7 @@ internal static class InstanceClassifier
 {
     public static MemorySnapshot Classify(
         IReadOnlyList<TrackedInstance> live, Dictionary<string, int> collected, IReadOnlyDictionary<string, int> cumulative,
-        BaselineComparison? baseline, DateTime now, TimeSpan elapsed, int rounds, IHolderScanner holders)
+        BaselineComparison? baseline, DateTime now, TimeSpan elapsed, int rounds, IHolderScanner holders, MemorySample sample)
     {
         var attachedContexts = new HashSet<object>(ReferenceEqualityComparer.Instance);
         var attachedElements = new List<Element>();
@@ -68,13 +68,13 @@ internal static class InstanceClassifier
                 verdicts.Add((record, target, attachedContexts.Contains(target) || reachable.Reaches(target)));
         }
 
-        return Build(verdicts, contextOwners, collected, cumulative, baseline, now, elapsed, rounds, live.Count, holders);
+        return Build(verdicts, contextOwners, collected, cumulative, baseline, now, elapsed, rounds, live.Count, holders, sample);
     }
 
     static MemorySnapshot Build(
         List<(TrackedInstance Record, object Target, bool Attached)> verdicts, Dictionary<object, Element> contextOwners,
         Dictionary<string, int> collected, IReadOnlyDictionary<string, int> cumulative, BaselineComparison? baseline,
-        DateTime now, TimeSpan elapsed, int rounds, int tracked, IHolderScanner scanner)
+        DateTime now, TimeSpan elapsed, int rounds, int tracked, IHolderScanner scanner, MemorySample sample)
     {
         var rows = new Dictionary<(string, TrackedKind), TypeRow>();
         var suspects = new List<Suspect>();
@@ -129,7 +129,7 @@ internal static class InstanceClassifier
         var totals = new SnapshotTotals(tracked, ordered.Sum(r => r.Alive), ordered.Sum(r => r.Attached), ordered.Sum(r => r.Detached),
             collected.Values.Sum(), cumulative.Values.Sum());
         var orderedSuspects = suspects.OrderByDescending(s => s.App).ThenByDescending(s => s.Survived).ThenBy(s => s.Name).ToList();
-        return new MemorySnapshot(now, elapsed, rounds, totals, ordered, orderedSuspects, MemoryMetrics.Sample()) { Baseline = baseline };
+        return new MemorySnapshot(now, elapsed, rounds, totals, ordered, orderedSuspects, sample) { Baseline = baseline };
     }
 
     /// <summary>Where the object sits: an element's ancestors, a handler's view with its ancestors, a view model's element.</summary>

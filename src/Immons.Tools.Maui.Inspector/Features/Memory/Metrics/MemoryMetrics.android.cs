@@ -4,41 +4,63 @@ namespace Immons.Tools.Maui.Inspector.Features.Memory.Metrics;
 
 internal static partial class MemoryMetrics
 {
-    /// <summary>Debug.getMemoryInfo asks the kernel for the whole mapping — tens of milliseconds, so not every second.</summary>
-    static readonly TimeSpan PssInterval = TimeSpan.FromSeconds(5);
-    static DateTime _pssRead;
-    static long? _pss, _graphics;
+    /// <summary>
+    /// Debug.getMemoryInfo walks the whole memory map — tens of milliseconds normally, hundreds with
+    /// large mappings or while a collection holds the runtime — so not every second, and never on
+    /// the main thread (an ANR dump caught the UI thread inside it, called from a snapshot's
+    /// classification and the navigation ledger, both of which run there).
+    /// </summary>
+    static readonly ThrottledProbe<PssReading> Pss = new(
+        TimeSpan.FromSeconds(5),
+        ReadPss,
+        work => ThreadPool.UnsafeQueueUserWorkItem(static w => w(), work, preferLocal: false));
+
+    sealed record PssReading(long? Pss, long? Graphics);
 
     static partial void SamplePlatform(ref PlatformMemory platform)
     {
         var runtime = Java.Lang.Runtime.GetRuntime();
         var jni = Java.Interop.JniEnvironment.Runtime;
-        RefreshPss();
+        var pss = Pss.Refresh(OnMainThread(), System.Environment.TickCount64);
         platform = new PlatformMemory(
             WorkingSet(),
             runtime == null ? null : runtime.TotalMemory() - runtime.FreeMemory(),
             Debug.NativeHeapAllocatedSize,
             jni.GlobalReferenceCount,
             jni.WeakGlobalReferenceCount,
-            PssBytes: _pss,
-            GraphicsBytes: _graphics);
+            PssBytes: pss?.Pss,
+            GraphicsBytes: pss?.Graphics);
     }
 
-    static void RefreshPss()
+    static PssReading ReadPss()
     {
-        if (DateTime.Now - _pssRead < PssInterval)
-            return;
-        _pssRead = DateTime.Now;
+        // A named section, so a systrace/Perfetto capture shows which thread pays for the read.
+        Android.OS.Trace.BeginSection("MauiInspector.getMemoryInfo");
         try
         {
-            var info = new Debug.MemoryInfo();
+            using var info = new Debug.MemoryInfo();
             Debug.GetMemoryInfo(info);
-            _pss = info.TotalPss * 1024L;
-            _graphics = long.TryParse(info.GetMemoryStat("summary.graphics"), out var graphicsKb) ? graphicsKb * 1024L : null;
+            return new PssReading(
+                info.TotalPss * 1024L,
+                OperatingSystem.IsAndroidVersionAtLeast(23) && long.TryParse(info.GetMemoryStat("summary.graphics"), out var graphicsKb)
+                    ? graphicsKb * 1024L
+                    : null);
+        }
+        finally
+        {
+            Android.OS.Trace.EndSection();
+        }
+    }
+
+    static bool OnMainThread()
+    {
+        try
+        {
+            return Microsoft.Maui.ApplicationModel.MainThread.IsMainThread;
         }
         catch
         {
-            _pss = _graphics = null;
+            return true; // unsure — do not risk the UI thread
         }
     }
 

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Immons.Tools.Maui.Inspector.Features.Memory.Holders;
+using Immons.Tools.Maui.Inspector.Features.Memory.Metrics;
 using Immons.Tools.Maui.Inspector.Features.Memory.Tracking;
 
 namespace Immons.Tools.Maui.Inspector.Features.Memory.Snapshots;
@@ -75,8 +76,12 @@ internal sealed class SnapshotRunner(ITrackedInstances instances, IMainThreadDis
                     Baseline.Rows.GroupBy(r => r.Type).ToDictionary(g => g.Key, g => g.Sum(r => r.Alive)),
                     Baseline.Totals.Alive, Baseline.Totals.Detached);
             var cumulative = instances.CollectedSinceReset;
+            // Read here, off the main thread: on Android the reading may ask the kernel for the whole
+            // memory map (Debug.getMemoryInfo), which right after the collections can take long enough
+            // to freeze the UI. Classify itself has to run on the main thread.
+            var sample = MemoryMetrics.Sample();
             var snapshot = await mainThread.RunAsync(() =>
-                InstanceClassifier.Classify(live, collected, cumulative, comparison, DateTime.Now, Stopwatch.GetElapsedTime(started), rounds, holders)).ConfigureAwait(false);
+                InstanceClassifier.Classify(live, collected, cumulative, comparison, DateTime.Now, Stopwatch.GetElapsedTime(started), rounds, holders, sample)).ConfigureAwait(false);
 
             Previous = Latest;
             Latest = snapshot;
