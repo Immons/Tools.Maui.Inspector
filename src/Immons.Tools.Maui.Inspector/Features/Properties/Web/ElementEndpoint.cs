@@ -12,7 +12,7 @@ internal sealed class ElementEndpoint(
     IStructureCommands structure,
     AutomationIdBinder automationIds) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         var parts = path.Trim('/').Split('/');
         if (parts.Length < 3 || parts[0] != "api" || parts[1] != "element" || !int.TryParse(parts[2], out var id))

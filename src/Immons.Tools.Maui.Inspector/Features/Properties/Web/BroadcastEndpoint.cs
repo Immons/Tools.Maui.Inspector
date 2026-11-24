@@ -14,7 +14,7 @@ internal sealed class BroadcastEndpoint(
     IPropertyCollector properties,
     ISyncTracker sync) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Get && path == ApiRoutes.Broadcast.Ping)
         {
@@ -44,7 +44,10 @@ internal sealed class BroadcastEndpoint(
             var window = mainThread.RunAsync(() =>
                 inspectors.Current is { } inspector ? Features.RemoteControl.DeviceIdentity.Window(inspector) : null);
             // Never let a busy main thread stall the ping (the startup self-probe waits on it).
-            if (await Task.WhenAny(window, Task.Delay(500)).ConfigureAwait(false) == window && window.Result is { } size)
+            // Observed either way — it may fault, or be left behind on a busy main thread.
+            FireAndForget.Observe(window, "ping window size");
+            if (await Task.WhenAny(window, Task.Delay(500)).ConfigureAwait(false) == window
+                && window.IsCompletedSuccessfully && window.Result is { } size)
                 json["window"] = size;
             await HttpResponse.WriteJson(context, json.ToJsonString()).ConfigureAwait(false);
             return true;

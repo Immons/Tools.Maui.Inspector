@@ -12,7 +12,7 @@ internal sealed class HeapDumpEndpoint(
     ISnapshotRunner snapshots,
     ISyncTracker sync) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Get && path == ApiRoutes.Memory.Dumps)
         {
@@ -107,7 +107,7 @@ internal sealed class HeapDumpEndpoint(
     /// and matching its types is the panel's business, not a shell script's — this waits (bounded)
     /// and returns what the tool found, or why it did not.
     /// </summary>
-    async Task OrderAndWait(HttpListenerContext context)
+    async Task OrderAndWait(InspectorHttpContext context)
     {
         var body = await RequestBody.ReadJson(context).ConfigureAwait(false);
         var timeout = TimeSpan.FromMilliseconds(Math.Clamp(body?["timeoutMs"]?.GetValue<int>() ?? DefaultWaitMs, 1000, MaxWaitMs));

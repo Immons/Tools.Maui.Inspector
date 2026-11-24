@@ -19,6 +19,7 @@
   <ItemGroup>
     <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Features\SignalR\*.cs" />
     <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Web\Http\*.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Web\Hosting\ListenerSupervisor.cs" />
     <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.SignalR\*.cs"
              Exclude="..\..\src\Immons.Tools.Maui.Inspector.SignalR\MauiInspectorSignalRExtensions.cs" />
   </ItemGroup>

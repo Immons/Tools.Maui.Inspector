@@ -68,8 +68,8 @@ internal sealed class CookbookHost(ICookbookCatalog catalog) : ICookbookHost
         HookModalStack();
         ClearStagedFocus(); // the page takes over; a headless focus would be a stale twin
         var page = new CookbookPage(catalog.Build(), MauiInspector.Options.Cookbook, SampleContext);
-        page.CloseRequested += () => _ = CloseAsync();
-        page.FocusRequested += item => _ = FocusAsync(item.Id);
+        page.CloseRequested += () => FireAndForget.Observe(CloseAsync(), "cookbook close");
+        page.FocusRequested += item => FireAndForget.Observe(FocusAsync(item.Id), "cookbook focus");
         Page = page;
         try
         {
@@ -145,7 +145,7 @@ internal sealed class CookbookHost(ICookbookCatalog catalog) : ICookbookHost
         if (RootPage() is not { } root)
             return false;
         var sample = new CookbookSamplePage(item, SampleContext, page);
-        sample.CloseRequested += () => _ = UnfocusAsync();
+        sample.CloseRequested += () => FireAndForget.Observe(UnfocusAsync(), "cookbook unfocus");
         _samplePage = sample;
         try
         {

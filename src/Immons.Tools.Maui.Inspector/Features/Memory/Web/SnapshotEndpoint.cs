@@ -9,7 +9,7 @@ namespace Immons.Tools.Maui.Inspector.Features.Memory.Web;
 /// </summary>
 internal sealed class SnapshotEndpoint(ISnapshotRunner snapshots, IHeapDumpRequests dumps) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Post && path == ApiRoutes.Memory.Baseline)
         {
@@ -28,7 +28,7 @@ internal sealed class SnapshotEndpoint(ISnapshotRunner snapshots, IHeapDumpReque
         return true;
     }
 
-    Task Respond(HttpListenerContext context)
+    Task Respond(InspectorHttpContext context)
     {
         var json = new JsonObject
         {

@@ -6,7 +6,7 @@ namespace Immons.Tools.Maui.Inspector.Features.NetworkInspection;
 /// <summary>Breakpoint control: GET /api/intercept, POST …/config, …/resume, …/abort.</summary>
 internal sealed class InterceptEndpoint(IBreakpointGate breakpoints) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Get && path == ApiRoutes.Intercept.State)
         {

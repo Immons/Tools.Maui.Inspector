@@ -1,6 +1,6 @@
 namespace Immons.Tools.Maui.Inspector.Web.Hosting;
 
-/// <summary>One bound listening socket as the supervisor sees it — HttpListener in the app,
+/// <summary>One bound listening socket as the supervisor sees it — InspectorHttpListener in the app,
 /// a fake in the tests.</summary>
 internal interface IInspectorListener<TContext>
 {
@@ -275,7 +275,7 @@ internal sealed class ListenerSupervisor<TContext>
 
         var generation = Interlocked.Increment(ref _generation);
         _current = listener;
-        _ = Task.Run(() => AcceptLoop(listener, generation));
+        Forget(Task.Run(() => AcceptLoop(listener, generation)), "accept loop");
 
         ProbeResult probe;
         try
@@ -338,7 +338,7 @@ internal sealed class ListenerSupervisor<TContext>
                 if (!listening || failures >= _options.AcceptFailuresBeforeRestart)
                 {
                     // Fire and forget: the restart stops this listener, which ends this loop.
-                    _ = RestartCoreAsync($"accept loop failed: {ex.Message}", Volatile.Read(ref _restartEpoch));
+                    Forget(RestartCoreAsync($"accept loop failed: {ex.Message}", Volatile.Read(ref _restartEpoch)), "restart");
                     return;
                 }
 
@@ -356,6 +356,23 @@ internal sealed class ListenerSupervisor<TContext>
             }
         }
     }
+
+    /// <summary>Fire-and-forget that is always observed — a faulted discarded task would reach the host
+    /// app's TaskScheduler.UnobservedTaskException (and its crash reporter).</summary>
+    void Forget(Task task, string what) =>
+        task.ContinueWith(static (t, state) =>
+        {
+            var (self, name) = ((ListenerSupervisor<TContext>, string))state!;
+            try
+            {
+                self._log(ServerLogLevel.Warning, $"{name} failed: {t.Exception!.GetBaseException().Message}");
+            }
+            catch
+            {
+                // logging must never throw out of a continuation
+            }
+        }, (this, what), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
 
     TimeSpan Backoff(int failures)
     {

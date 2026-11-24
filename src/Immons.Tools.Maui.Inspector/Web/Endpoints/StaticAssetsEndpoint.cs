@@ -5,7 +5,7 @@ namespace Immons.Tools.Maui.Inspector.Web.Endpoints;
 /// <summary>Serves the embedded web client: index, stylesheet and the /js/*.js modules.</summary>
 internal sealed class StaticAssetsEndpoint : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method != HttpVerbs.Get)
             return false;

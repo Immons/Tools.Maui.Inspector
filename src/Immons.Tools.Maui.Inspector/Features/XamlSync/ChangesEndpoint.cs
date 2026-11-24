@@ -10,7 +10,7 @@ namespace Immons.Tools.Maui.Inspector.Features.XamlSync;
 /// </summary>
 internal sealed class ChangesEndpoint(IXamlChangeLog xamlChanges, ISyncTracker sync) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Post && path == ApiRoutes.Changes.Ack)
         {

@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using Immons.Tools.Maui.Inspector.Features.SignalR;
 using Immons.Tools.Maui.Inspector.SignalR;
+using Immons.Tools.Maui.Inspector.Web.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
@@ -199,22 +200,18 @@ var monitor2 = new SignalRMonitor();
         received.Count(m => m.StartsWith("burst ")) == 20 && await burst == "during burst");
 
     // HTTP API of the panel.
-    var apiPort = FreePort();
-    using var listener = new HttpListener();
-    listener.Prefixes.Add($"http://127.0.0.1:{apiPort}/");
-    listener.Start();
+    var listener = new InspectorHttpListener(0);
+    var apiPort = listener.Port;
     var endpoint = new SignalREndpoint(monitor2);
     _ = Task.Run(async () =>
     {
         while (listener.IsListening)
         {
-            HttpListenerContext ctx;
-            try { ctx = await listener.GetContextAsync(); } catch { return; }
-            if (!await endpoint.TryHandle(ctx, ctx.Request.HttpMethod, ctx.Request.Url!.AbsolutePath))
-            {
-                ctx.Response.StatusCode = 404;
-                ctx.Response.Close();
-            }
+            InspectorHttpContext ctx;
+            try { ctx = await listener.AcceptAsync(); } catch { return; }
+            if (!await endpoint.TryHandle(ctx, ctx.Request.HttpMethod, ctx.Request.Url.AbsolutePath))
+                await HttpResponse.WriteText(ctx, 404, "not found");
+            ctx.Response.Close();
         }
     });
     using var http = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{apiPort}") };

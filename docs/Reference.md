@@ -59,7 +59,7 @@ are not migrated — they land in SQLite the next time you apply an edit. The da
 - `UseMauiInspector` appends to `WindowHandler.Mapper`, so every window gets an inspector when its handler connects.
 - Android: the activity's `Window.Callback` is wrapped to observe (never consume) touches for long-press detection; overlay layers are added to the `DecorView`. iOS: a non-cancelling `UILongPressGestureRecognizer` on the `UIWindow`; layers are added as window subviews. Windows: a `KeyboardAccelerator` + `Holding` handler on the root content.
 - The overlay itself is regular MAUI UI (`ToPlatform`-hosted), deliberately detached from the page tree, so it never shows up in the inspected tree and works over any page, Shell or modal.
-- The web panel is served by an `HttpListener` inside the app; the client is a dependency-free static page embedded in the assembly.
+- The web panel is served by a small HTTP/1.1 server inside the app (a plain socket, not `HttpListener` — clients that disconnect never surface as unobserved task exceptions); the client is a dependency-free static page embedded in the assembly.
 - Element bounds come from the native views (`GetLocationInWindow` / `ConvertRectToView` / `TransformToVisual`), so scrolling and transforms are reflected.
 - HTTP interception is a plain `DelegatingHandler` — no proxy, no system certificates, nothing to trust.
 - The inspector registers in the standard `IServiceCollection` and keeps every service to a single public constructor, so apps that swap the MAUI container (Autofac & co.) resolve it fine.

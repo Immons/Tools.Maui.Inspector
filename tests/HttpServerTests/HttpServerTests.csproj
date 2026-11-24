@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>HttpServerTests</RootNamespace>
+    <!-- The baseline section drives System.Net.HttpListener on purpose. -->
+    <NoWarn>$(NoWarn);SYSLIB0014</NoWarn>
+  </PropertyGroup>
+  <!-- Links the inspector's MAUI-free HTTP server (and the supervisor seam it implements) — a plain
+       console runner with real loopback sockets. Clients that vanish mid-request and mid-response
+       must never surface as exceptions or TaskScheduler.UnobservedTaskException. `dotnet run`
+       prints PASS/FAIL per check and exits non-zero on any failure. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Web\Hosting\ListenerSupervisor.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Web\Http\InspectorHttpServer.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Web\Http\HttpResponse.cs" />
+    <Compile Include="..\..\src\Immons.Tools.Maui.Inspector\Web\Http\RequestBody.cs" />
+  </ItemGroup>
+</Project>

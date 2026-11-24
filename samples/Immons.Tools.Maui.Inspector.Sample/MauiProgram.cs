@@ -18,6 +18,11 @@ public static class MauiProgram
 			});
 
 #if DEBUG
+		// Stand-in for a crash reporter (Sentry, SessionReplay…): whatever reaches these hooks is printed.
+		// The inspector must never be the source — its web server swallows clients that disconnect.
+		TaskScheduler.UnobservedTaskException += (_, e) => Console.WriteLine("[Sample] UNOBSERVED TASK EXCEPTION " + e.Exception);
+		AppDomain.CurrentDomain.UnhandledException += (_, e) => Console.WriteLine("[Sample] UNHANDLED EXCEPTION " + e.ExceptionObject);
+
 		builder
 			.UseMauiInspector(options =>
 			{

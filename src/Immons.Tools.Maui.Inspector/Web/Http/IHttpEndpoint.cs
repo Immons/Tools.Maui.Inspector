@@ -10,5 +10,5 @@ namespace Immons.Tools.Maui.Inspector.Web.Http;
 internal interface IHttpEndpoint
 {
     /// <summary>Handles the request when the route matches; false lets the next endpoint try.</summary>
-    Task<bool> TryHandle(HttpListenerContext context, string method, string path);
+    Task<bool> TryHandle(InspectorHttpContext context, string method, string path);
 }

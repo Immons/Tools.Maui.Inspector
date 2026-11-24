@@ -47,9 +47,9 @@ internal sealed class PropertiesPane : ScrollView
         RebuildStack();
 
         if (preserveScroll)
-            Dispatcher.Dispatch(() => _ = ScrollToAsync(0, scrollY, false));
+            Dispatcher.Dispatch(() => FireAndForget.Observe(ScrollToAsync(0, scrollY, false), "properties scroll"));
         else
-            _ = ScrollToAsync(0, 0, false);
+            FireAndForget.Observe(ScrollToAsync(0, 0, false), "properties scroll");
     }
 
     void AddSection(PropertySection section)

@@ -8,7 +8,7 @@ internal sealed class ToggleEndpoint(
     IActiveInspectorProvider inspectors,
     IXamlChangeLog xamlChanges) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method != HttpVerbs.Post)
             return false;

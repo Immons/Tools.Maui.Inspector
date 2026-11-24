@@ -19,7 +19,7 @@ internal sealed class CookbookEndpoint(
 {
     public const string VisualStatesHeader = "X-Visual-States";
 
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Get && path == ApiRoutes.Cookbook.Catalog)
         {

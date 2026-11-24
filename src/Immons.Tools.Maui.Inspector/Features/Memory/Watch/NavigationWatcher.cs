@@ -101,7 +101,7 @@ internal sealed class NavigationWatcher(INavigationLedger ledger, ISnapshotRunne
         _scheduled?.Cancel();
         var cts = new CancellationTokenSource();
         _scheduled = cts;
-        _ = Task.Run(async () =>
+        FireAndForget.Run(async () =>
         {
             try
             {
@@ -116,6 +116,6 @@ internal sealed class NavigationWatcher(INavigationLedger ledger, ISnapshotRunne
             {
                 InspectorServices.Current.Logs.Write(Microsoft.Extensions.Logging.LogLevel.Warning, "MauiInspector", "watch-mode snapshot failed: " + ex.Message);
             }
-        });
+        }, "watch-mode snapshot");
     }
 }

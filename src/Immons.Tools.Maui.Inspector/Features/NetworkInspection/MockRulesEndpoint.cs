@@ -6,7 +6,7 @@ namespace Immons.Tools.Maui.Inspector.Features.NetworkInspection;
 /// <summary>CRUD for mock rules: GET /api/mock/rules, POST …/save, …/delete, …/enable.</summary>
 internal sealed class MockRulesEndpoint(IMockRules rules, IScenarioRecorder recorder) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Get && path == ApiRoutes.MockRules.List)
         {

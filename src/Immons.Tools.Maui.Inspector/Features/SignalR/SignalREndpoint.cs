@@ -11,7 +11,7 @@ namespace Immons.Tools.Maui.Inspector.Features.SignalR;
 /// </summary>
 internal sealed class SignalREndpoint(ISignalRMonitor monitor) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (!path.StartsWith(ApiRoutes.SignalR.Hubs, StringComparison.Ordinal))
             return false;
@@ -82,7 +82,7 @@ internal sealed class SignalREndpoint(ISignalRMonitor monitor) : IHttpEndpoint
     static string? Text(JsonNode? node) =>
         node is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
 
-    static async Task<JsonNode?> ReadBody(HttpListenerContext context)
+    static async Task<JsonNode?> ReadBody(InspectorHttpContext context)
     {
         try
         {

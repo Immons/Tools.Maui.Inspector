@@ -90,7 +90,7 @@ internal static partial class ServerLifecycle
 
         var cts = new CancellationTokenSource();
         Interlocked.Exchange(ref _debounce, cts)?.Cancel();
-        _ = Task.Run(async () =>
+        FireAndForget.Run(async () =>
         {
             try
             {
@@ -102,7 +102,7 @@ internal static partial class ServerLifecycle
             }
 
             RemoteServer.OnNetworkChanged(profiles.Length == 0 ? "network back" : "network: " + string.Join("+", profiles));
-        });
+        }, "network-change debounce");
     }
 
     static (bool Connected, string[] Profiles) Snapshot(IConnectivity connectivity) =>

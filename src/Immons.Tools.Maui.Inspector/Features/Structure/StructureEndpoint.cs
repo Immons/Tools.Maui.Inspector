@@ -17,7 +17,7 @@ internal sealed class StructureEndpoint(
 {
     string? _cachedJson;
 
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Post && path == ApiRoutes.Structure.AddAt)
         {

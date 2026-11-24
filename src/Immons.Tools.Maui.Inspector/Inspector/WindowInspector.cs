@@ -198,7 +198,7 @@ internal sealed partial class WindowInspector
         {
             // The gallery is a page of its own — long-press any tile to inspect it.
             Hide();
-            _ = InspectorServices.Current.Cookbook.OpenAsync(null);
+            FireAndForget.Observe(InspectorServices.Current.Cookbook.OpenAsync(null), "cookbook open");
         };
         _panelLayer.ElementPicked += (el, scrollTree) =>
         {

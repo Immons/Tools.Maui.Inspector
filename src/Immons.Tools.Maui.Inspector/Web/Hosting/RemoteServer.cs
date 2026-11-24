@@ -1,4 +1,3 @@
-using System.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Immons.Tools.Maui.Inspector.Web.Hosting;
@@ -18,7 +17,7 @@ internal static class RemoteServer
     const int AutoPortRangeStart = 9295;
     const int AutoPortRangeSize = 15;
 
-    static ListenerSupervisor<HttpListenerContext>? _supervisor;
+    static ListenerSupervisor<InspectorHttpContext>? _supervisor;
     static IReadOnlyList<IHttpEndpoint> _endpoints = [];
     static bool _forcedPort;
     static int _starting;
@@ -51,22 +50,22 @@ internal static class RemoteServer
         _forcedPort = port != null;
         var (first, range) = port is { } forced ? (forced, 0) : (AutoPortRangeStart, AutoPortRangeSize - 1);
         _endpoints = EndpointFactory.CreateAll();
-        var supervisor = new ListenerSupervisor<HttpListenerContext>(
+        var supervisor = new ListenerSupervisor<InspectorHttpContext>(
             Bind,
             ProbeForOurNonce,
-            context => _ = Task.Run(() => HandleSafe(context)),
+            context => FireAndForget.Run(() => HandleSafe(context), "request"),
             (level, message) => Announce(message, level == ServerLogLevel.Warning ? LogLevel.Warning : LogLevel.Information));
         _supervisor = supervisor;
 
         // Off the main thread: probing can wait on sockets. Url stays null until ready.
-        _ = Task.Run(async () =>
+        FireAndForget.Run(async () =>
         {
             if (!await StartWithFallback(first, range).ConfigureAwait(false))
                 return;
             ServerLifecycle.Start();
-            _ = supervisor.RunWatchdogAsync(ServerRecoveryPolicy.WatchdogInterval, () => ServerLifecycle.IsActive,
-                ServerRecoveryPolicy.WatchdogFailuresBeforeRestart, CancellationToken.None);
-        });
+            FireAndForget.Run(() => supervisor.RunWatchdogAsync(ServerRecoveryPolicy.WatchdogInterval, () => ServerLifecycle.IsActive,
+                ServerRecoveryPolicy.WatchdogFailuresBeforeRestart, CancellationToken.None), "watchdog");
+        }, "start");
     }
 
     /// <summary>The app came back to the foreground.</summary>
@@ -74,9 +73,9 @@ internal static class RemoteServer
     {
         if (_supervisor?.Port == null)
             return;
-        _ = Task.Run(() => action == ResumeAction.Restart
+        FireAndForget.Run(() => action == ResumeAction.Restart
             ? RestartOrRelocate("app returned to the foreground")
-            : EnsureHealthyOrRelocate("app returned to the foreground"));
+            : EnsureHealthyOrRelocate("app returned to the foreground"), "resume");
     }
 
     /// <summary>The network came back or switched interfaces while the app is in the foreground.</summary>
@@ -84,7 +83,7 @@ internal static class RemoteServer
     {
         if (_supervisor?.Port == null)
             return;
-        _ = Task.Run(() => RestartOrRelocate(reason));
+        FireAndForget.Run(() => RestartOrRelocate(reason), "network change");
     }
 
     static async Task RestartOrRelocate(string reason)
@@ -116,7 +115,13 @@ internal static class RemoteServer
         await StartWithFallback(AutoPortRangeStart, AutoPortRangeSize - 1).ConfigureAwait(false);
     }
 
-    static IInspectorListener<HttpListenerContext> Bind(int port) => new HttpListenerAdapter(port);
+    static IInspectorListener<InspectorHttpContext> Bind(int port) => new InspectorHttpListener(port, ServerLog);
+
+    /// <summary>Real server failures go to the console and the Logs view as warnings; client disconnects
+    /// only to the debugger output — a closed panel tab is not news, and must not crowd the app's logs.</summary>
+    static readonly HttpServerLog ServerLog = new(
+        (_, message) => Announce(message, LogLevel.Warning),
+        message => System.Diagnostics.Debug.WriteLine("[MauiInspector] " + message));
 
     /// <summary>
     /// Several instances of the same app (multi-simulator hot reload) share one host, and a
@@ -213,7 +218,11 @@ internal static class RemoteServer
         }
     }
 
-    static async Task HandleSafe(HttpListenerContext context)
+    /// <summary>
+    /// Runs one exchange. Never faults — it is started fire-and-forget by the accept loop: a client
+    /// that went away is a Debug line, a handler failure a 500 (when nothing was sent yet).
+    /// </summary>
+    static async Task HandleSafe(InspectorHttpContext context)
     {
         try
         {
@@ -221,20 +230,30 @@ internal static class RemoteServer
         }
         catch (Exception ex)
         {
-            try
+            if (HttpServerLog.IsClientGone(ex))
+                System.Diagnostics.Debug.WriteLine($"[MauiInspector] {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}: client gone ({ex.GetType().Name})");
+            else if (!context.Response.HasStarted)
             {
-                await HttpResponse.WriteText(context, 500, ex.Message).ConfigureAwait(false);
+                try
+                {
+                    await HttpResponse.WriteText(context, 500, ex.Message).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // WriteText reports a dropped client as false; nothing else can come out of it
+                }
             }
-            catch
-            {
-                // client went away
-            }
+        }
+        finally
+        {
+            // A handler that returned without answering must not keep the connection waiting.
+            context.Response.Close();
         }
     }
 
-    static async Task Handle(HttpListenerContext context)
+    static async Task Handle(InspectorHttpContext context)
     {
-        var path = context.Request.Url?.AbsolutePath ?? "/";
+        var path = context.Request.Url.AbsolutePath;
         var method = context.Request.HttpMethod;
 
         foreach (var endpoint in _endpoints)
@@ -244,50 +263,5 @@ internal static class RemoteServer
         }
 
         await HttpResponse.WriteText(context, 404, "not found").ConfigureAwait(false);
-    }
-
-    /// <summary>HttpListener behind the supervisor's seam; one instance = one bound socket.</summary>
-    sealed class HttpListenerAdapter : IInspectorListener<HttpListenerContext>
-    {
-        readonly HttpListener _listener = new();
-
-        public HttpListenerAdapter(int port)
-        {
-            _listener.Prefixes.Add($"http://*:{port}/");
-            try
-            {
-                _listener.Start();
-            }
-            catch
-            {
-                Stop();
-                throw;
-            }
-        }
-
-        public bool IsListening => _listener.IsListening;
-
-        public Task<HttpListenerContext> AcceptAsync() => _listener.GetContextAsync();
-
-        public void Stop()
-        {
-            try
-            {
-                _listener.Stop();
-            }
-            catch
-            {
-                // already dead — nothing to release
-            }
-
-            try
-            {
-                _listener.Close();
-            }
-            catch
-            {
-                // already dead — nothing to release
-            }
-        }
     }
 }

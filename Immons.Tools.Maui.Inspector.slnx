@@ -21,5 +21,6 @@
     <Project Path="tests/NetworkCaptureTests/NetworkCaptureTests.csproj" />
     <Project Path="tests/SignalRTests/SignalRTests.csproj" />
     <Project Path="tests/MauiCompatTests/MauiCompatTests.csproj" />
+    <Project Path="tests/HttpServerTests/HttpServerTests.csproj" />
   </Folder>
 </Solution>

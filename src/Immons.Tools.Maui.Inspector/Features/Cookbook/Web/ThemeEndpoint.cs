@@ -6,7 +6,7 @@ namespace Immons.Tools.Maui.Inspector.Features.Cookbook.Web;
 /// <summary>GET /api/theme and POST /api/theme {theme: "system" | "light" | "dark"} — the app-wide theme override.</summary>
 internal sealed class ThemeEndpoint(IMainThreadDispatcher mainThread, ICookbookHost host) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (path != ApiRoutes.Theme.State)
             return false;

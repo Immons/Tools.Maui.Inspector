@@ -20,7 +20,7 @@ internal sealed class RemoteControlEndpoint(
     readonly GestureRunner _gestures = new(mainThread);
     bool? _touchAvailable;
 
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         switch (method)
         {
@@ -59,7 +59,7 @@ internal sealed class RemoteControlEndpoint(
 
     // ── Looking ─────────────────────────────────────────────────────────────────────────────
 
-    async Task Find(HttpListenerContext context)
+    async Task Find(InspectorHttpContext context)
     {
         var query = ElementQuery.From(context.Request.QueryString);
         if (query == null)
@@ -79,7 +79,7 @@ internal sealed class RemoteControlEndpoint(
         await HttpResponse.WriteJson(context, json).ConfigureAwait(false);
     }
 
-    async Task Page(HttpListenerContext context)
+    async Task Page(InspectorHttpContext context)
     {
         var json = await mainThread.RunAsync(() =>
             inspectors.Current is { } inspector ? RemoteNavigation.Describe(inspector, _locator).ToJsonString() : null).ConfigureAwait(false);
@@ -89,7 +89,7 @@ internal sealed class RemoteControlEndpoint(
             await HttpResponse.WriteJson(context, json).ConfigureAwait(false);
     }
 
-    async Task Wait(HttpListenerContext context)
+    async Task Wait(InspectorHttpContext context)
     {
         var body = await RequestBody.ReadJson(context).ConfigureAwait(false) as JsonObject ?? [];
         var query = ElementQuery.From(body);
@@ -128,7 +128,7 @@ internal sealed class RemoteControlEndpoint(
 
     // ── Touching ────────────────────────────────────────────────────────────────────────────
 
-    async Task Tap(HttpListenerContext context, JsonObject body)
+    async Task Tap(InspectorHttpContext context, JsonObject body)
     {
         var native = Bool(body, "native") ?? true;
         var query = ElementQuery.From(body);
@@ -173,7 +173,7 @@ internal sealed class RemoteControlEndpoint(
         return await mainThread.RunAsync(() => inspectors.Current?.RemoteTapAt(point) == true ? "semantic" : null).ConfigureAwait(false);
     }
 
-    async Task LongPress(HttpListenerContext context, JsonObject body)
+    async Task LongPress(InspectorHttpContext context, JsonObject body)
     {
         var duration = Math.Clamp(Int(body, "durationMs") ?? 800, 100, 10_000);
         var query = ElementQuery.From(body);
@@ -213,7 +213,7 @@ internal sealed class RemoteControlEndpoint(
         await Respond(context, via != null, target != null ? await Described(target, extra).ConfigureAwait(false) : extra).ConfigureAwait(false);
     }
 
-    async Task Swipe(HttpListenerContext context, JsonObject body)
+    async Task Swipe(InspectorHttpContext context, JsonObject body)
     {
         if (!await TouchAvailable().ConfigureAwait(false))
         {
@@ -275,7 +275,7 @@ internal sealed class RemoteControlEndpoint(
 
     // ── Scrolling ───────────────────────────────────────────────────────────────────────────
 
-    async Task Scroll(HttpListenerContext context, JsonObject body)
+    async Task Scroll(InspectorHttpContext context, JsonObject body)
     {
         if (!GesturePath.TryParseDirection(Str(body, "direction") ?? "down", out var direction))
         {
@@ -310,7 +310,7 @@ internal sealed class RemoteControlEndpoint(
         await HttpResponse.WriteJson(context, result.ToJsonString()).ConfigureAwait(false);
     }
 
-    async Task ScrollByGesture(HttpListenerContext context, ElementHit? container, ScrollDirection direction, double amount)
+    async Task ScrollByGesture(InspectorHttpContext context, ElementHit? container, ScrollDirection direction, double amount)
     {
         if (!await TouchAvailable().ConfigureAwait(false))
         {
@@ -374,7 +374,7 @@ internal sealed class RemoteControlEndpoint(
         };
     }
 
-    async Task ScrollTo(HttpListenerContext context, JsonObject body)
+    async Task ScrollTo(InspectorHttpContext context, JsonObject body)
     {
         var query = ElementQuery.From(body);
         if (query == null)
@@ -455,7 +455,7 @@ internal sealed class RemoteControlEndpoint(
         return await mainThread.RunAsync(() => _locator.Find(query)).ConfigureAwait(false) ?? hit;
     }
 
-    async Task<ElementHit?> RequireOnScreen(HttpListenerContext context, ElementQuery query, ElementHit? hit)
+    async Task<ElementHit?> RequireOnScreen(InspectorHttpContext context, ElementQuery query, ElementHit? hit)
     {
         if (hit == null)
         {
@@ -478,7 +478,7 @@ internal sealed class RemoteControlEndpoint(
 
     // ── Text and navigation ─────────────────────────────────────────────────────────────────
 
-    async Task SetText(HttpListenerContext context, JsonObject body)
+    async Task SetText(InspectorHttpContext context, JsonObject body)
     {
         if (body["value"] is not JsonValue valueNode || !valueNode.TryGetValue<string>(out var value))
         {
@@ -531,7 +531,7 @@ internal sealed class RemoteControlEndpoint(
             await HttpResponse.WriteJson(context, result.ToJsonString()).ConfigureAwait(false);
     }
 
-    async Task Back(HttpListenerContext context)
+    async Task Back(InspectorHttpContext context)
     {
         var action = await mainThread.RunTaskAsync(() =>
             inspectors.Current is { } inspector ? RemoteNavigation.BackAsync(inspector) : Task.FromResult("none")).ConfigureAwait(false);
@@ -549,7 +549,7 @@ internal sealed class RemoteControlEndpoint(
         return extra;
     });
 
-    static Task Respond(HttpListenerContext context, bool ok, JsonObject extra)
+    static Task Respond(InspectorHttpContext context, bool ok, JsonObject extra)
     {
         var json = new JsonObject { ["ok"] = ok };
         foreach (var (key, value) in extra.ToList())
@@ -560,7 +560,7 @@ internal sealed class RemoteControlEndpoint(
         return HttpResponse.WriteJson(context, json.ToJsonString());
     }
 
-    static Task Fail(HttpListenerContext context, int status, string error) =>
+    static Task Fail(InspectorHttpContext context, int status, string error) =>
         HttpResponse.WriteJson(context, new JsonObject { ["ok"] = false, ["error"] = error }.ToJsonString(), status);
 
     static object? ItemOf(VisualElement element, ItemsView itemsView)

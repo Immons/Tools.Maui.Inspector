@@ -5,7 +5,7 @@ namespace Immons.Tools.Maui.Inspector.Features.NetworkInspection;
 /// <summary>GET /api/network — requests captured by <see cref="MauiInspectorHttpHandler"/>.</summary>
 internal sealed class NetworkEndpoint(INetworkLog network) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Post && path == ApiRoutes.Network.Clear)
         {

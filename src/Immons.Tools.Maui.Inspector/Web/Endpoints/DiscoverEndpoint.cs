@@ -24,7 +24,7 @@ internal sealed class DiscoverEndpoint : IHttpEndpoint
 
     static readonly SemaphoreSlim OneSweep = new(1, 1);
 
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method != HttpVerbs.Get || path != ApiRoutes.Discover.Lan)
             return false;

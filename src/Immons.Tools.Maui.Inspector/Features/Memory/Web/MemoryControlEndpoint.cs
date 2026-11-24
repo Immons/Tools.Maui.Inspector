@@ -15,7 +15,7 @@ internal sealed class MemoryControlEndpoint(
     ITrackedInstances instances,
     IInstanceTracker tracker) : IHttpEndpoint
 {
-    public async Task<bool> TryHandle(HttpListenerContext context, string method, string path)
+    public async Task<bool> TryHandle(InspectorHttpContext context, string method, string path)
     {
         if (method == HttpVerbs.Post && path == ApiRoutes.Memory.Settings)
         {
