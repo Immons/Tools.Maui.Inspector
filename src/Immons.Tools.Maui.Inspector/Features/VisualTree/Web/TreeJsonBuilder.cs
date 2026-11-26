@@ -17,7 +17,7 @@ internal sealed class TreeJsonBuilder(IActiveInspectorProvider inspectors, IElem
         if (inspectors.Current is { } inspector)
         {
             root["window"] = $"{ValueFormatter.F(inspector.WindowSize.Width)}×{ValueFormatter.F(inspector.WindowSize.Height)}";
-            foreach (var node in TreeNode.Build(inspector.Roots))
+            foreach (var node in TreeNode.Build(inspector.Roots, inspector.RootNote))
                 rootsArray.Add(ToJson(node));
         }
 

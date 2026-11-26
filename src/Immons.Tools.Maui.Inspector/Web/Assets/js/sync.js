@@ -4,6 +4,10 @@
 // updater already polls, offer to enable; when it doesn't, show how to start it.
 let xamlEditPromptShown = false;
 
+// Visual roots outside the page tree (overlays on the platform window): their number changes when
+// one appears or goes away, and the tree is reloaded then.
+let treeSeq = null;
+
 function maybeOfferXamlEditing(d) {
   if (d.wysiwyg || d.sync === undefined || xamlEditPromptShown) return;
   // Wait for the first tree payload — the instructions need the device platform and port.
@@ -151,6 +155,12 @@ setInterval(async () => {
         await loadHistory();
       // Edits made anywhere (on the device too) change what the cookbook tiles show.
       if (!first) cookbookOnEdit();
+    }
+
+    if (d.tseq !== undefined && d.tseq !== treeSeq) {
+      const first = treeSeq === null;
+      treeSeq = d.tseq;
+      if (!first) await refreshAll(true);
     }
 
     if (activeView === 'network') refreshNetworkView();

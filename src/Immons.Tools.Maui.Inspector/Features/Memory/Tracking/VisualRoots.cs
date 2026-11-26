@@ -16,8 +16,13 @@ internal sealed class VisualRoots : IVisualRoots
     readonly ConditionalWeakTable<Element, object> _discovered = new();
     readonly List<WeakReference<Element>> _shown = [];
     volatile int _explicitCount;
+    int _version;
 
     public bool HasExplicit => _explicitCount > 0;
+
+    public int Version => Volatile.Read(ref _version);
+
+    public event Action? Changed;
 
     public bool AddExplicit(Element root)
     {
@@ -29,8 +34,9 @@ internal sealed class VisualRoots : IVisualRoots
             _explicitList.RemoveAll(w => !w.TryGetTarget(out _));
             _explicitList.Add(new WeakReference<Element>(root));
             _explicitCount = _explicitList.Count;
-            return true;
         }
+        OnChanged();
+        return true;
     }
 
     public bool RemoveExplicit(Element root)
@@ -41,8 +47,9 @@ internal sealed class VisualRoots : IVisualRoots
                 return false;
             _explicitList.RemoveAll(w => !w.TryGetTarget(out var target) || ReferenceEquals(target, root));
             _explicitCount = _explicitList.Count;
-            return true;
         }
+        OnChanged();
+        return true;
     }
 
     public bool IsExplicit(Element element)
@@ -73,25 +80,34 @@ internal sealed class VisualRoots : IVisualRoots
 
     public (List<Element> Appeared, List<Element> Vanished) Scanned(IReadOnlyList<Element> found)
     {
+        List<Element> appeared, vanished;
         lock (_gate)
         {
             var before = Alive(_shown);
-            var appeared = found.Where(f => !before.Contains(f, ReferenceEqualityComparer.Instance)).ToList();
-            var vanished = before.Where(b => !found.Contains(b, ReferenceEqualityComparer.Instance)).ToList();
+            appeared = found.Where(f => !before.Contains(f, ReferenceEqualityComparer.Instance)).ToList();
+            vanished = before.Where(b => !found.Contains(b, ReferenceEqualityComparer.Instance)).ToList();
             foreach (var root in appeared)
                 _discovered.AddOrUpdate(root, Present);
             _shown.Clear();
             _shown.AddRange(found.Select(f => new WeakReference<Element>(f)));
-            return (appeared, vanished);
         }
+        if (appeared.Count > 0 || vanished.Count > 0)
+            OnChanged();
+        return (appeared, vanished);
     }
 
-    public void ForgetScan()
+    public IReadOnlyList<Element> Shown()
     {
         lock (_gate)
         {
-            _shown.Clear();
+            return Alive(_shown);
         }
+    }
+
+    void OnChanged()
+    {
+        Interlocked.Increment(ref _version);
+        Changed?.Invoke();
     }
 
     static List<Element> Alive(List<WeakReference<Element>> list) =>

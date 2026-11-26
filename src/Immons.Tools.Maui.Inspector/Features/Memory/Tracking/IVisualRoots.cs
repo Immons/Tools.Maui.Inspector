@@ -25,6 +25,12 @@ internal interface IVisualRoots
     /// <summary>Records the roots found on the platform windows now; returns those new since the last scan and those gone.</summary>
     (List<Element> Appeared, List<Element> Vanished) Scanned(IReadOnlyList<Element> found);
 
-    /// <summary>Forgets what the last scan found — tracking was switched off, the next scan starts over.</summary>
-    void ForgetScan();
+    /// <summary>The roots found by the last scan, bottom to top as the platform window stacks them.</summary>
+    IReadOnlyList<Element> Shown();
+
+    /// <summary>Bumped whenever the set of live roots changes — the web panel's cue to reload the tree.</summary>
+    int Version { get; }
+
+    /// <summary>The set of live roots changed (raised outside any lock, on the thread that changed it).</summary>
+    event Action? Changed;
 }

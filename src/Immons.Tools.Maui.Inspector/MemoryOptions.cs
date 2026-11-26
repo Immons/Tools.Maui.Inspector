@@ -29,7 +29,8 @@ public sealed class MemoryOptions
     /// with or without the MAUI window as their Parent — so their elements are tracked like a page's:
     /// attached while the root is on the platform window, detached once it is gone. A scan of the
     /// window's direct children every 1.5 s and before every snapshot. Roots the app knows can also
-    /// be reported with <see cref="Memory.TrackVisualRoot"/>. Needs <see cref="TrackInstances"/>. Default: true.
+    /// be reported with <see cref="Memory.TrackVisualRoot"/>. The Inspector tab's element tree lists the same roots
+    /// (with tracking off too); counting their elements needs <see cref="TrackInstances"/>. Default: true.
     /// </summary>
     public bool DiscoverVisualRoots { get; set; } = true;
 

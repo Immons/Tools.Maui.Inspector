@@ -138,6 +138,8 @@
                 <Button x:Name="ReportedOverlayBtn" AutomationId="ReportedOverlayBtn" Text="Reported" Clicked="OnReportedOverlayClicked"
                         BackgroundColor="Transparent" TextColor="#512BD4" BorderColor="#512BD4" BorderWidth="1" />
             </HorizontalStackLayout>
+            <Button x:Name="ModalBtn" AutomationId="ModalBtn" Text="Modal page" Clicked="OnModalClicked" HorizontalOptions="Start"
+                    BackgroundColor="Transparent" TextColor="#512BD4" BorderColor="#512BD4" BorderWidth="1" />
 
             <!-- SignalR view demo: needs samples/Immons.Tools.Maui.Inspector.SignalRServer running. -->
             <Button x:Name="SignalRBtn" AutomationId="SignalRBtn" Text="📡 SignalR demo" Clicked="OnSignalRClicked"

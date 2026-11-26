@@ -15,6 +15,8 @@ internal sealed partial class WindowInspector : IWindowInspector
 
     public IEnumerable<VisualElement> Roots => RootElements();
 
+    public string? RootNote(VisualElement root) => OverlayNote(root);
+
     public Rect? BoundsOf(VisualElement element) => GetRectInWindow(element);
 
     public byte[]? CapturePng() => CapturePngPlatform();

@@ -58,14 +58,13 @@ internal sealed partial class InstanceTracker(ITrackedInstances instances, IVisu
             // reference to the app's objects at all.
             options.WatchNavigation = false;
             instances.Clear();
-            roots.ForgetScan();
             return;
         }
 
         var windows = LiveWindows();
         foreach (var window in windows)
             ReadTree(window);
-        foreach (var root in roots.Explicit())
+        foreach (var root in roots.Explicit().Concat(roots.Shown()))
             ShowRoot(root);
         RefreshRoots();
         InspectorServices.Current.Logs.Write(Microsoft.Extensions.Logging.LogLevel.Debug, "MauiInspector",

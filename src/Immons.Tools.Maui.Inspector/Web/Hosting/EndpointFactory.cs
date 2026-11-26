@@ -16,7 +16,8 @@ internal static class EndpointFactory
 
         ITreeJsonBuilder treeJson = new TreeJsonBuilder(inspectors, elements);
         IElementJsonBuilder elementJson = new ElementJsonBuilder(inspectors, elements, InspectorServices.Current.Properties);
-        ISelectionJsonBuilder selectionJson = new SelectionJsonBuilder(inspectors, elements, history, xamlChanges, sync);
+        ISelectionJsonBuilder selectionJson = new SelectionJsonBuilder(inspectors, elements, history, xamlChanges, sync,
+            InspectorServices.Current.Tracker, InspectorServices.Current.VisualRoots);
         var structure = InspectorServices.Current.Structure;
         IPropertyCommands commands = new PropertyCommands(inspectors, elements, InspectorServices.Current.Properties, history, structure);
 

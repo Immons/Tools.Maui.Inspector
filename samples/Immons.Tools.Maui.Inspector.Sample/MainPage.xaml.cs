@@ -8,6 +8,7 @@ public partial class MainPage : ContentPage
 	bool _autoShown;
 	bool _leaked;
 	bool _overlaid;
+	bool _windowOverlaid;
 
 	/// <summary>Parked between screens on purpose: bound to the overlay while it is up, kept here after.</summary>
 	readonly LeakDemo.SharedFilterState _sharedFilter = new();
@@ -197,6 +198,26 @@ public partial class MainPage : ContentPage
 
 	void OnLeakyWindowOverlayClicked(object? sender, EventArgs e) => ShowWindowOverlay(leaky: true);
 
+	/// <summary>A modal page with its own overlay button — the tree stacks modal and overlay as the platform does.</summary>
+	async void OnModalClicked(object? sender, EventArgs e)
+	{
+		var close = new Button { Text = "Close modal", AutomationId = "ModalCloseBtn" };
+		var overlay = new Button { Text = "Window overlay", AutomationId = "ModalOverlayBtn" };
+		var modal = new ContentPage
+		{
+			Title = "Demo modal",
+			Padding = new Thickness(24, 80),
+			Content = new VerticalStackLayout { Spacing = 12, Children = { new Label { Text = "A modal page" }, close, overlay } },
+		};
+		close.Clicked += async (_, _) => await Navigation.PopModalAsync();
+		overlay.Clicked += (_, _) =>
+		{
+			if (modal.Window is { } window)
+				LeakDemo.WindowOverlay.Show(window, leaky: false);
+		};
+		await Navigation.PushModalAsync(modal);
+	}
+
 	void OnReportedOverlayClicked(object? sender, EventArgs e) => ShowWindowOverlay(leaky: true, reported: true);
 
 	void ShowWindowOverlay(bool leaky, bool reported = false)
@@ -239,6 +260,14 @@ public partial class MainPage : ContentPage
 		{
 			_overlaid = true;
 			Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(3), async () => await ShowAndHideOverlays(overlays));
+		}
+
+		// Test hook: HV_WINDOW_OVERLAY=n shows the window overlay n seconds after startup — with the
+		// on-device panel already open, it must come up above the overlay and list it.
+		if (!_windowOverlaid && int.TryParse(Environment.GetEnvironmentVariable("HV_WINDOW_OVERLAY"), out var overlayDelay) && overlayDelay > 0)
+		{
+			_windowOverlaid = true;
+			Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(overlayDelay), () => ShowWindowOverlay(leaky: false));
 		}
 
 		// Test hook: HV_LEAK=n pushes and pops n leaky pages after startup (Memory view smoke tests).

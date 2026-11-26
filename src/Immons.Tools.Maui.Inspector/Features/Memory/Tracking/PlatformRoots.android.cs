@@ -21,6 +21,24 @@ internal static partial class PlatformRoots
     static partial void ReadOnScreen(Element element, ref bool? onScreen) =>
         onScreen = element.Handler?.PlatformView is AView { IsAttachedToWindow: true };
 
+    const int DialogWindows = 10_000;
+
+    static partial void ReadZOrder(Window window, Element root, ref int? z)
+    {
+        if (window.Handler?.PlatformView is not Android.App.Activity { Window.DecorView: ViewGroup decor }
+            || root.Handler?.PlatformView is not AView { IsAttachedToWindow: true } view)
+            return;
+        if (!ReferenceEquals(view.RootView, decor))
+        {
+            z = DialogWindows;
+            return;
+        }
+        while (view.Parent is AView parent && !ReferenceEquals(parent, decor))
+            view = parent;
+        var index = decor.IndexOfChild(view);
+        z = index >= 0 ? index : null;
+    }
+
     static Element? ToElement(AView view) => view switch
     {
         WrapperView wrapper => wrapper.ChildCount > 0 && wrapper.GetChildAt(0) is { } inner ? ToElement(inner) : null,

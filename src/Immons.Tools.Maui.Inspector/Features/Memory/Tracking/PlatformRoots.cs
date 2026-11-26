@@ -19,7 +19,21 @@ internal static partial class PlatformRoots
         return onScreen;
     }
 
+    /// <summary>
+    /// Where the root's platform view sits in the window's stacking, higher on top: its branch's index
+    /// among the platform window's direct children; Android modals (windows of their own above the
+    /// activity) above all of them. Null where the platform cannot tell.
+    /// </summary>
+    public static int? ZOrder(Window window, Element root)
+    {
+        int? z = null;
+        ReadZOrder(window, root, ref z);
+        return z;
+    }
+
     static partial void CollectHosted(Window window, List<Element> roots);
+
+    static partial void ReadZOrder(Window window, Element root, ref int? z);
 
     static partial void ReadOnScreen(Element element, ref bool? onScreen);
 }

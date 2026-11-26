@@ -22,7 +22,14 @@ internal interface IWindowInspector
 
     bool DebugPaintActive { get; }
 
+    /// <summary>
+    /// Bottom to top: the window's page, then its modals and the visual roots hosted outside the
+    /// page tree (overlays on the platform window, reported roots) in platform stacking order.
+    /// </summary>
     IEnumerable<VisualElement> Roots { get; }
+
+    /// <summary>The tree's marker for a root that is not the page or a modal ("window overlay"), else null.</summary>
+    string? RootNote(VisualElement root);
 
     Size WindowSize { get; }
 

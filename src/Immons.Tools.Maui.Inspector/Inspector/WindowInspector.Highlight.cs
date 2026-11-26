@@ -42,12 +42,12 @@ internal sealed partial class WindowInspector
 
         // A removed element detaches from the window — drop the selection with it,
         // otherwise its last box would stay painted over the live app.
-        if (_selected is { Window: null })
+        if (_selected is { } selected && !ElementAttachment.IsAttached(selected))
         {
             _selected = null;
             _compare = null;
         }
-        else if (_compare is { Window: null })
+        else if (_compare is { } compared && !ElementAttachment.IsAttached(compared))
         {
             _compare = null;
         }

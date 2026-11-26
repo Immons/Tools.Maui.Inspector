@@ -5,14 +5,18 @@ internal sealed class TreeNode
     public required VisualElement Element { get; init; }
     public TreeNode? Parent { get; init; }
     public List<TreeNode> Children { get; } = [];
-    public string Label => Describe(Element, Children.Count);
 
-    public static List<TreeNode> Build(IEnumerable<VisualElement> roots) =>
-        roots.Select(r => BuildNode(r, null)).ToList();
+    /// <summary>What a top-level node is when it is not the window's page — "window overlay".</summary>
+    public string? Note { get; init; }
 
-    static TreeNode BuildNode(VisualElement element, TreeNode? parent)
+    public string Label => Note is null ? Describe(Element, Children.Count) : $"{Describe(Element, Children.Count)} · {Note}";
+
+    public static List<TreeNode> Build(IEnumerable<VisualElement> roots, Func<VisualElement, string?>? note = null) =>
+        roots.Select(r => BuildNode(r, null, note?.Invoke(r))).ToList();
+
+    static TreeNode BuildNode(VisualElement element, TreeNode? parent, string? note = null)
     {
-        var node = new TreeNode { Element = element, Parent = parent };
+        var node = new TreeNode { Element = element, Parent = parent, Note = note };
         foreach (var child in VisualTreeWalker.GetVisualChildren(element))
             node.Children.Add(BuildNode(child, node));
         return node;

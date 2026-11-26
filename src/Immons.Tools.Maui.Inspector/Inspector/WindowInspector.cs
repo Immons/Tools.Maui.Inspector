@@ -27,7 +27,14 @@ internal sealed partial class WindowInspector
         AppForegroundState.Track(window);
         HookModalStack();
         _window.SizeChanged += OnWindowSizeChanged;
+        InspectorServices.Current.VisualRoots.Changed += OnVisualRootsChanged;
     }
+
+    /// <summary>
+    /// An overlay hosted on the platform window was added above the inspector's own layers, or one
+    /// went away: put the layers back on top and reload the tree.
+    /// </summary>
+    void OnVisualRootsChanged() => RehomeLayers();
 
     /// <summary>
     /// Rotation rebuilds adaptive layouts and re-lays everything out — a kept selection
@@ -116,6 +123,7 @@ internal sealed partial class WindowInspector
     {
         UnhookModalStack();
         _window.SizeChanged -= OnWindowSizeChanged;
+        InspectorServices.Current.VisualRoots.Changed -= OnVisualRootsChanged;
         DetachPlatform();
     }
 
@@ -228,24 +236,93 @@ internal sealed partial class WindowInspector
 
     Point LayerOrigin => GetLayerOriginPlatform();
 
-    /// <summary>Roots in bottom-to-top order: the window page followed by any modal pages.</summary>
-    IEnumerable<VisualElement> RootElements()
+    /// <summary>
+    /// Roots in bottom-to-top order: the window page, then the modal pages and the visual roots the
+    /// page tree does not contain (overlays hosted on the platform window, roots the app reported),
+    /// stacked as the platform stacks them.
+    /// </summary>
+    List<VisualElement> RootElements()
     {
-        if (_window.Page is { } page)
-        {
-            yield return page;
+        var roots = new List<VisualElement>();
+        if (_window.Page is not { } page)
+            return roots;
+        roots.Add(page);
 
-            IReadOnlyList<Page>? modals = null;
-            try { modals = page.Navigation?.ModalStack; }
-            catch { /* navigation may be unavailable mid-teardown */ }
-
-            if (modals != null)
-                foreach (var modal in modals)
-                    yield return modal;
-        }
+        var above = new List<VisualElement>();
+        IReadOnlyList<Page>? modals = null;
+        try { modals = page.Navigation?.ModalStack; }
+        catch { /* navigation may be unavailable mid-teardown */ }
+        if (modals != null)
+            above.AddRange(modals);
+        above.AddRange(OverlayRoots());
+        roots.AddRange(InStackingOrder(above));
+        return roots;
     }
 
-    void RefreshTree() => _panelLayer?.SetTree(TreeNode.Build(RootElements()));
+    /// <summary>
+    /// The tracker's visual roots (0.10.3 registry) that belong to this window and are on screen —
+    /// re-scanned here, so the tree is current even with tracking off. A root inside another root
+    /// or inside the page's own tree is not a root of the element tree.
+    /// </summary>
+    List<VisualElement> OverlayRoots()
+    {
+        var services = InspectorServices.Current;
+        services.Tracker.RefreshRoots();
+        var registry = services.VisualRoots;
+        var candidates = new List<VisualElement>();
+        foreach (var root in registry.Shown().Concat(registry.Explicit()).OfType<VisualElement>())
+        {
+            if (root.GetType().Assembly != typeof(WindowInspector).Assembly
+                && !candidates.Contains(root)
+                && BelongsHere(root)
+                && !ElementAttachment.InWindowContent(root)
+                && PlatformRoots.IsOnScreen(root) != false)
+                candidates.Add(root);
+        }
+        return candidates.Where(root => !HasAncestorIn(root, candidates)).ToList();
+    }
+
+    bool BelongsHere(VisualElement root)
+    {
+        if (root.Window is { } window)
+            return ReferenceEquals(window, _window);
+        if (PlatformRoots.ZOrder(_window, root) is not null)
+            return true;
+        return ReferenceEquals(Application.Current?.Windows.FirstOrDefault(), _window);
+    }
+
+    static bool HasAncestorIn(Element element, List<VisualElement> roots)
+    {
+        for (var parent = element.Parent; parent != null; parent = parent.Parent)
+        {
+            if (parent is VisualElement visual && roots.Contains(visual))
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>Modals and overlays by platform stacking; their list order where the platform cannot tell.</summary>
+    List<VisualElement> InStackingOrder(List<VisualElement> above)
+    {
+        if (above.Count < 2)
+            return above;
+        var keyed = above.Select(root => (Root: root, Z: PlatformRoots.ZOrder(_window, root))).ToList();
+        return keyed.Any(k => k.Z is null)
+            ? above
+            : keyed.OrderBy(k => k.Z!.Value).Select(k => k.Root).ToList();
+    }
+
+    string? OverlayNote(VisualElement root)
+    {
+        if (root is Page)
+            return null;
+        var registry = InspectorServices.Current.VisualRoots;
+        if (registry.IsExplicit(root))
+            return "reported root";
+        return registry.IsDiscovered(root) ? "window overlay" : null;
+    }
+
+    void RefreshTree() => _panelLayer?.SetTree(TreeNode.Build(RootElements(), OverlayNote));
 
     /// <summary>Writes an indented, designer-oriented dump of the whole visual tree to the console.</summary>
     void DumpHierarchy()

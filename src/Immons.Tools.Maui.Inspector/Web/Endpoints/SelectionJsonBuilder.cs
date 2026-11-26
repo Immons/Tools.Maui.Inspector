@@ -9,7 +9,9 @@ internal sealed class SelectionJsonBuilder(
     IElementRegistry elements,
     IEditHistory history,
     IXamlChangeLog xamlChanges,
-    ISyncTracker sync) : ISelectionJsonBuilder
+    ISyncTracker sync,
+    IInstanceTracker tracker,
+    IVisualRoots visualRoots) : ISelectionJsonBuilder
 {
     public string Build()
     {
@@ -39,6 +41,10 @@ internal sealed class SelectionJsonBuilder(
                 result["valign"] = view.VerticalOptions.Alignment.ToString();
             }
         }
+        // Overlays on the platform window come and go without any tree event: the poll re-scans,
+        // and a new number tells the panel to reload the tree.
+        tracker.RefreshRoots();
+        result["tseq"] = visualRoots.Version;
         result["compare"] = inspector.CompareElement is { } compare ? elements.GetId(compare) : null;
         result["measure"] = inspector.MeasureMode;
         result["select"] = inspector.RemoteSelectModeActive;
