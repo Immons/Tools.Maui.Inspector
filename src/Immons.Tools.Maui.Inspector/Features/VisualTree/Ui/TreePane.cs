@@ -110,10 +110,7 @@ internal sealed class TreePane : Grid
         SetSelectedVm(target);
 
         if (scroll)
-        {
-            try { _list.ScrollTo(target, position: ScrollToPosition.Center, animate: false); }
-            catch { /* ScrollTo can throw during teardown on some platforms */ }
-        }
+            _list.ScrollWhenReady(list => list.ScrollTo(target, position: ScrollToPosition.Center, animate: false));
     }
 
     TreeNodeVM? FindVm(TreeNode node) => _items.FirstOrDefault(vm => ReferenceEquals(vm.Node, node));

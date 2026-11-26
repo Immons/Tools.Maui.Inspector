@@ -8,7 +8,7 @@
 
 	<!-- Shared NuGet package metadata; versions of both packages move in lockstep. -->
 	<PropertyGroup>
-		<Version>0.10.5</Version>
+		<Version>0.11.0</Version>
 		<Authors>Artur Malendowicz "Immons"</Authors>
 		<Company>Immons</Company>
 		<Copyright>Copyright © Immons</Copyright>
@@ -18,6 +18,28 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<!-- The MAUI packages ship for .NET 10 and .NET 11 side by side, so apps on either keep working.
+	     net*-windows only builds on a Windows host. -->
+	<PropertyGroup>
+		<MauiInspectorPlatformFrameworks>net10.0-android;net11.0-android;net10.0-ios;net11.0-ios</MauiInspectorPlatformFrameworks>
+		<MauiInspectorPlatformFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(MauiInspectorPlatformFrameworks);net10.0-windows10.0.19041.0;net11.0-windows10.0.19041.0</MauiInspectorPlatformFrameworks>
+		<MauiInspectorFrameworks>net10.0;net11.0;$(MauiInspectorPlatformFrameworks)</MauiInspectorFrameworks>
+	</PropertyGroup>
+
+	<!-- Per-framework package versions: the MAUI build and the .NET runtime packages each TFM is
+	     compiled against — the floor an app on that .NET gets. -p:MauiVersion=… still overrides. -->
+	<PropertyGroup Condition="$(TargetFramework.StartsWith('net10.0'))">
+		<MauiVersion Condition="'$(MauiVersion)' == ''">10.0.130</MauiVersion>
+		<MauiInspectorDotNetPackageVersion>10.0.15</MauiInspectorDotNetPackageVersion>
+		<MauiInspectorAndroidMinVersion>21.0</MauiInspectorAndroidMinVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition="$(TargetFramework.StartsWith('net11.0'))">
+		<MauiVersion Condition="'$(MauiVersion)' == ''">11.0.10</MauiVersion>
+		<MauiInspectorDotNetPackageVersion>11.0.0</MauiInspectorDotNetPackageVersion>
+		<!-- .NET 11 for Android dropped API levels below 24. -->
+		<MauiInspectorAndroidMinVersion>24.0</MauiInspectorAndroidMinVersion>
 	</PropertyGroup>
 
 </Project>

@@ -15,7 +15,7 @@
 <PackageReference Include="Immons.Tools.Maui.Inspector" Version="0.9.18" Condition="'$(Configuration)' == 'Debug'" />
 ```
 
-Targets `net10.0-ios`, `net10.0-android` and `net10.0-windows` (plus a no-op `net10.0`), MIT licensed.
+Targets .NET 10 and .NET 11 — `net10.0-ios`/`net11.0-ios`, `net10.0-android`/`net11.0-android` and `net10.0-windows`/`net11.0-windows` (plus a no-op `net10.0`/`net11.0`), MIT licensed.
 
 ### Enable the inspector
 

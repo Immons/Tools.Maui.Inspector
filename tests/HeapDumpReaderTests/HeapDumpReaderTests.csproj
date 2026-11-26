@@ -26,6 +26,6 @@
     <Compile Include="..\..\src\Immons.Tools.Maui.Inspector.Sync\HeapDumps\MonoPayload.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.23" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="4.0.2" />
   </ItemGroup>
 </Project>

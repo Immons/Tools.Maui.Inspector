@@ -4,11 +4,11 @@
 
 | Platform | TFM | Activation |
 | --- | --- | --- |
-| Android (API 21+) | `net10.0-android` | long-press (1–2 fingers), shake |
-| iOS 15+ | `net10.0-ios` | long-press (1–2 fingers), shake |
-| Windows (WinUI 3) | `net10.0-windows10.0.19041.0` | `Ctrl+Shift+I` or touch press-and-hold |
+| Android (API 21+; 24+ on .NET 11) | `net10.0-android`, `net11.0-android` | long-press (1–2 fingers), shake |
+| iOS 15+ | `net10.0-ios`, `net11.0-ios` | long-press (1–2 fingers), shake |
+| Windows (WinUI 3) | `net10.0-windows10.0.19041.0`, `net11.0-windows10.0.19041.0` | `Ctrl+Shift+I` or touch press-and-hold |
 
-The `net10.0` target compiles to no-ops, so referencing the library never breaks other targets.
+The plain `net10.0` / `net11.0` targets compile to no-ops, so referencing the library never breaks other targets.
 The Windows target only builds on Windows machines (guarded in the csproj).
 
 ### Options

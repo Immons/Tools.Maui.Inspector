@@ -436,7 +436,7 @@ internal sealed class RemoteControlEndpoint(
                     await scrollView.ScrollToAsync(element, ScrollToPosition.Center, false);
                     return true;
                 case ItemsView itemsView when ItemOf(element, itemsView) is { } item:
-                    itemsView.ScrollTo(item, position: ScrollToPosition.Center, animate: false);
+                    itemsView.ScrollWhenReady(list => list.ScrollTo(item, position: ScrollToPosition.Center, animate: false));
                     return true;
             }
         }

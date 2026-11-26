@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>net10.0;net11.0</TargetFrameworks>
 		<RootNamespace>Immons.Tools.Maui.Inspector.Sync</RootNamespace>
 
 		<PackAsTool>true</PackAsTool>
@@ -17,7 +17,7 @@
 
 	<ItemGroup>
 		<!-- FastSerialization — the stream format of .gcdump files (see Vendored/DotNetHeapDump/README.md). -->
-		<PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.23" />
+		<PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="4.0.2" />
 	</ItemGroup>
 
 </Project>

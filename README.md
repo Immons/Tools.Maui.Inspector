@@ -47,7 +47,7 @@ Run the app and open the URL it prints — the panel is served by the app itself
 [MauiInspector] web inspector listening on http://localhost:9295/
 ```
 
-Targets `net10.0-ios`, `net10.0-android` and `net10.0-windows` (plus a no-op `net10.0`), MIT licensed.
+Targets .NET 10 and .NET 11 — `net10.0-ios`/`net11.0-ios`, `net10.0-android`/`net11.0-android` and `net10.0-windows`/`net11.0-windows` (plus a no-op `net10.0`/`net11.0`), MIT licensed.
 Four optional companion packages (XAML write-back, SQLite storage, heap-dump diagnostics, markup
 extensions) are listed in [Getting started](https://github.com/Immons/Tools.Maui.Inspector/wiki/Getting-started#packages).
 

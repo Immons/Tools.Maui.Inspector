@@ -94,7 +94,7 @@ internal sealed class CookbookPage : ContentPage
                 continue;
             ShowSection(section.Id, CookbookPaging.PageOf(index));
             await Task.Delay(60);
-            _list.ScrollTo(CookbookPaging.IndexOnPage(index), position: ScrollToPosition.MakeVisible, animate: false);
+            _list.ScrollWhenReady(list => list.ScrollTo(CookbookPaging.IndexOnPage(index), position: ScrollToPosition.MakeVisible, animate: false));
             return true;
         }
         return false;

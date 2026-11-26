@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.0
+
+- .NET 11: every package ships `net11.0`, `net11.0-android`, `net11.0-ios` and `net11.0-windows10.0.19041.0` next to the `net10.0` ones, so apps on .NET 10 keep working and apps on .NET 11 get a build compiled against MAUI 11. The .NET 10 frameworks are built against MAUI 10.0.130, the .NET 11 ones against MAUI 11.0.10; on .NET 11 Android the minimum is API 24 (the floor of .NET 11 for Android). `maui-inspector-sync` runs on either runtime.
+- Windows, MAUI 11: opening the on-device inspector crashed the app. MAUI 11's `CollectionView` on Windows (`ItemsViewHandler2` over WinUI's `ItemsView`) defers `ScrollTo` on a list that is not loaded yet to the `Loaded` event, and there `ItemsView.StartBringItemIntoView` throws "ItemsRepeater part is not available" (0x800710DD) from inside a WinUI event handler — a stowed exception no catch reaches. The tree, the Cookbook and remote-control scrolling now only scroll a loaded list, and a list that is still loading scrolls a dispatcher turn after `Loaded`.
+- Packages: `SignalR.Client` 10.0.15 / 11.0.0 per framework, `sqlite-net-pcl` 1.11.285, `SQLitePCLRaw.bundle_green` 2.1.11, `Microsoft.Diagnostics.Tracing.TraceEvent` 4.0.2. The repo builds with the .NET 11 SDK (global.json 11.0.100).
+
 ## 0.10.5
 
 - Fix: the visual-root scan (0.10.3) could crash the app. After a window-hosted popup closed, its root still pointed at a platform view whose native peer was already disposed, and the scan's 1.5 s timer read `IsAttachedToWindow` (Android) / `Window` (iOS) on it — `ObjectDisposedException` on the main loop. A disposed view now counts as off screen, and the scan logs a warning instead of throwing.
