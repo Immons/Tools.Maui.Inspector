@@ -67,8 +67,17 @@ internal sealed partial class InstanceTracker
         _scan.IsRepeating = true;
         _scan.Tick += (_, _) =>
         {
-            if (Enabled || MauiInspector.ActiveInspector?.IsShown == true)
+            if (!Enabled && MauiInspector.ActiveInspector?.IsShown != true)
+                return;
+            // A timer tick runs on the app's main loop: anything thrown here would take the app down.
+            try
+            {
                 RefreshRoots();
+            }
+            catch (Exception ex)
+            {
+                InspectorServices.Current.Logs.Write(Microsoft.Extensions.Logging.LogLevel.Warning, "MauiInspector", "visual root scan failed: " + ex.Message);
+            }
         };
         _scan.Start();
     }

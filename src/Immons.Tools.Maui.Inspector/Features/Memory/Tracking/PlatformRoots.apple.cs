@@ -17,11 +17,11 @@ internal static partial class PlatformRoots
     }
 
     static partial void ReadOnScreen(Element element, ref bool? onScreen) =>
-        onScreen = element.Handler?.PlatformView is UIView { Window: not null };
+        onScreen = Live(element) is { Window: not null };
 
     static partial void ReadZOrder(Window window, Element root, ref int? z)
     {
-        if (window.Handler?.PlatformView is not UIWindow platformWindow || root.Handler?.PlatformView is not UIView view
+        if (window.Handler?.PlatformView is not UIWindow platformWindow || Live(root) is not { } view
             || !ReferenceEquals(view.Window, platformWindow))
             return;
         while (view.Superview is { } superview && !ReferenceEquals(superview, platformWindow))
@@ -29,6 +29,10 @@ internal static partial class PlatformRoots
         var index = Array.IndexOf(platformWindow.Subviews, view);
         z = index >= 0 ? index : null;
     }
+
+    /// <summary>The element's platform view while the native object is alive (a disposed NSObject throws on any member).</summary>
+    static UIView? Live(Element element) =>
+        element.Handler?.PlatformView is UIView { Handle: var handle } view && handle != IntPtr.Zero ? view : null;
 
     static Element? ToElement(UIView view) => view switch
     {

@@ -19,14 +19,14 @@ internal static partial class PlatformRoots
     }
 
     static partial void ReadOnScreen(Element element, ref bool? onScreen) =>
-        onScreen = element.Handler?.PlatformView is AView { IsAttachedToWindow: true };
+        onScreen = Live(element) is { IsAttachedToWindow: true };
 
     const int DialogWindows = 10_000;
 
     static partial void ReadZOrder(Window window, Element root, ref int? z)
     {
         if (window.Handler?.PlatformView is not Android.App.Activity { Window.DecorView: ViewGroup decor }
-            || root.Handler?.PlatformView is not AView { IsAttachedToWindow: true } view)
+            || Live(root) is not { IsAttachedToWindow: true } view)
             return;
         if (!ReferenceEquals(view.RootView, decor))
         {
@@ -38,6 +38,13 @@ internal static partial class PlatformRoots
         var index = decor.IndexOfChild(view);
         z = index >= 0 ? index : null;
     }
+
+    /// <summary>
+    /// The element's platform view while its Java peer is alive. A popup that closed leaves its handler pointing at a
+    /// disposed view (Handle zero), and touching any of its members throws ObjectDisposedException.
+    /// </summary>
+    static AView? Live(Element element) =>
+        element.Handler?.PlatformView is AView { Handle: var handle } view && handle != IntPtr.Zero ? view : null;
 
     static Element? ToElement(AView view) => view switch
     {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.5
+
+- Fix: the visual-root scan (0.10.3) could crash the app. After a window-hosted popup closed, its root still pointed at a platform view whose native peer was already disposed, and the scan's 1.5 s timer read `IsAttachedToWindow` (Android) / `Window` (iOS) on it — `ObjectDisposedException` on the main loop. A disposed view now counts as off screen, and the scan logs a warning instead of throwing.
+
 ## 0.10.4
 
 - Inspector tab: the element tree lists the visual roots outside the page tree that the memory tracker learned to see in 0.10.3 — overlays hosted on the platform window (`… · window overlay`) and roots reported through `Memory.TrackVisualRoot` or as an `Element` to `Navigation.ReportPushed` (`… · reported root`) — as top-level nodes after the window's page, with the modals, in the platform's stacking order (topmost last: the `UIWindow`'s subview order on iOS, the decor view's child order on Android, where a modal's dialog window is above every overlay of the activity). Their children are walked like any element's, so select mode, Mirror tap-to-select, highlight bounds, the property panel, the XAML view, `/api/find`, `/api/tap` and the console dump reach them; an overlay covering the page is hit before the page. A Crate.Maui `CrateResponsivePopup` (root with the window as its `Parent`, view on the `UIWindow` / decor view) is the case this was built for.
