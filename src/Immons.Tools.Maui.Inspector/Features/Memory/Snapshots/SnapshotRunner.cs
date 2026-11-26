@@ -9,7 +9,8 @@ namespace Immons.Tools.Maui.Inspector.Features.Memory.Snapshots;
 /// Collections run off the main thread (so it can pump the releases they trigger); the
 /// classification runs on it, because it reads Parent/Handler/BindingContext of live elements.
 /// </summary>
-internal sealed class SnapshotRunner(ITrackedInstances instances, IMainThreadDispatcher mainThread, IHolderScanner holders, INavigationLedger ledger) : ISnapshotRunner
+internal sealed class SnapshotRunner(
+    ITrackedInstances instances, IMainThreadDispatcher mainThread, IHolderScanner holders, INavigationLedger ledger, IInstanceTracker tracker) : ISnapshotRunner
 {
     const int MinRounds = 1;
     const int MaxRounds = 20;
@@ -67,6 +68,12 @@ internal sealed class SnapshotRunner(ITrackedInstances instances, IMainThreadDis
         {
             var started = Stopwatch.GetTimestamp();
             var rounds = Math.Clamp(MauiInspector.Options.Memory.CollectionsPerSnapshot, MinRounds, MaxRounds);
+            // An overlay shown since the last scan tick is part of what this snapshot judges.
+            await mainThread.RunAsync(() =>
+            {
+                tracker.RefreshRoots();
+                return true;
+            }).ConfigureAwait(false);
             await Task.Run(() => GcRounds.RunAsync(rounds)).ConfigureAwait(false);
 
             var (live, collected) = instances.Prune();

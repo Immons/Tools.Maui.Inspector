@@ -34,6 +34,7 @@ internal static class InspectorServiceRegistration
         services.AddSingleton<ICookbookHost, CookbookHost>();
         services.AddSingleton<IMainThreadDispatcher, MainThreadDispatcher>();
         services.AddSingleton<ITrackedInstances, TrackedInstances>();
+        services.AddSingleton<IVisualRoots, VisualRoots>();
         services.AddSingleton<IInstanceTracker, InstanceTracker>();
         services.AddSingleton<ISnapshotRunner, SnapshotRunner>();
         services.AddSingleton<IMemoryTimeline, MemoryTimeline>();

@@ -193,6 +193,18 @@ public partial class MainPage : ContentPage
 		}
 	}
 
+	void OnWindowOverlayClicked(object? sender, EventArgs e) => ShowWindowOverlay(leaky: false);
+
+	void OnLeakyWindowOverlayClicked(object? sender, EventArgs e) => ShowWindowOverlay(leaky: true);
+
+	void OnReportedOverlayClicked(object? sender, EventArgs e) => ShowWindowOverlay(leaky: true, reported: true);
+
+	void ShowWindowOverlay(bool leaky, bool reported = false)
+	{
+		if (Window is { } window)
+			LeakDemo.WindowOverlay.Show(window, leaky, reported);
+	}
+
 	/// <summary>Push and pop a few leaky pages in a row — what a Memory snapshot should then flag.</summary>
 	async void OnLeakBatchClicked(object? sender, EventArgs e) => await PushAndPopLeakyPages(3);
 

@@ -129,6 +129,16 @@
                         BackgroundColor="Transparent" TextColor="#512BD4" BorderColor="#512BD4" BorderWidth="1" />
             </HorizontalStackLayout>
 
+            <!-- Overlay hosted on the platform window, outside the page's tree (popup-library style). -->
+            <HorizontalStackLayout Spacing="10">
+                <Button x:Name="WindowOverlayBtn" AutomationId="WindowOverlayBtn" Text="Window overlay" Clicked="OnWindowOverlayClicked"
+                        BackgroundColor="Transparent" TextColor="#512BD4" BorderColor="#512BD4" BorderWidth="1" />
+                <Button x:Name="LeakyWindowOverlayBtn" AutomationId="LeakyWindowOverlayBtn" Text="Leaky window overlay" Clicked="OnLeakyWindowOverlayClicked"
+                        BackgroundColor="Transparent" TextColor="#512BD4" BorderColor="#512BD4" BorderWidth="1" />
+                <Button x:Name="ReportedOverlayBtn" AutomationId="ReportedOverlayBtn" Text="Reported" Clicked="OnReportedOverlayClicked"
+                        BackgroundColor="Transparent" TextColor="#512BD4" BorderColor="#512BD4" BorderWidth="1" />
+            </HorizontalStackLayout>
+
             <!-- SignalR view demo: needs samples/Immons.Tools.Maui.Inspector.SignalRServer running. -->
             <Button x:Name="SignalRBtn" AutomationId="SignalRBtn" Text="📡 SignalR demo" Clicked="OnSignalRClicked"
                     HorizontalOptions="Fill" />

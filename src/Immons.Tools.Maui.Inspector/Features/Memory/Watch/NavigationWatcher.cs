@@ -8,7 +8,7 @@ namespace Immons.Tools.Maui.Inspector.Features.Memory.Watch;
 /// configured delay — several pops in a row share it — and the bisection aids run on the popped
 /// page right away. Every snapshot, manual or scheduled, judges the pending pages.
 /// </summary>
-internal sealed class NavigationWatcher(INavigationLedger ledger, ISnapshotRunner snapshots, ITrackedInstances instances) : INavigationWatcher
+internal sealed class NavigationWatcher(INavigationLedger ledger, ISnapshotRunner snapshots, ITrackedInstances instances, IInstanceTracker tracker) : INavigationWatcher
 {
     static readonly Assembly Self = typeof(NavigationWatcher).Assembly;
 
@@ -47,12 +47,16 @@ internal sealed class NavigationWatcher(INavigationLedger ledger, ISnapshotRunne
     /// <summary>
     /// A screen the app itself puts on screen — an overlay host's layer, a custom modal, anything
     /// that never becomes a Page in a Window and so cannot be seen in the visual tree. Reported
-    /// objects join the ledger and the tracker, and get the same verdicts as pushed pages.
+    /// objects join the ledger and the tracker, and get the same verdicts as pushed pages. A reported
+    /// element is also a visual root until it is reported popped: the elements under it count as
+    /// attached even when its tree is not the window's.
     /// </summary>
     public void ReportPushed(object screen, string? name = null)
     {
         ArgumentNullException.ThrowIfNull(screen);
         ledger.Pushed(screen, name, reported: true);
+        if (screen is Element element)
+            tracker.TrackRoot(element);
         instances.Track(screen, screen is Element ? TrackedKind.Element : TrackedKind.BindingContext, name);
         Reconsider();
     }
@@ -80,6 +84,8 @@ internal sealed class NavigationWatcher(INavigationLedger ledger, ISnapshotRunne
     {
         ArgumentNullException.ThrowIfNull(screen);
         OnPopped(screen);
+        if (screen is Element element)
+            tracker.UntrackRoot(element);
     }
 
     void OnPopped(object screen)

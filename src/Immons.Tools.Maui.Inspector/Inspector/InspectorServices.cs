@@ -29,6 +29,7 @@ internal sealed class InspectorServices(
     ICookbookCatalog cookbookCatalog,
     ICookbookHost cookbook,
     IInstanceTracker tracker,
+    IVisualRoots visualRoots,
     ITrackedInstances trackedInstances,
     ISnapshotRunner snapshots,
     IMemoryTimeline memory,
@@ -89,6 +90,8 @@ internal sealed class InspectorServices(
     public ICookbookHost Cookbook { get; } = cookbook;
 
     public IInstanceTracker Tracker { get; } = tracker;
+
+    public IVisualRoots VisualRoots { get; } = visualRoots;
 
     public ITrackedInstances TrackedInstances { get; } = trackedInstances;
 

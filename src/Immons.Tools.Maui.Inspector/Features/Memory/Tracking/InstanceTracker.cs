@@ -9,7 +9,7 @@ namespace Immons.Tools.Maui.Inspector.Features.Memory.Tracking;
 /// handler and platform view. Only weak references are kept; the per-element event subscriptions
 /// die with the element, so tracking never keeps anything alive.
 /// </summary>
-internal sealed class InstanceTracker(ITrackedInstances instances) : IInstanceTracker
+internal sealed partial class InstanceTracker(ITrackedInstances instances, IVisualRoots roots) : IInstanceTracker
 {
     static readonly Assembly Self = typeof(InstanceTracker).Assembly;
 
@@ -42,6 +42,7 @@ internal sealed class InstanceTracker(ITrackedInstances instances) : IInstanceTr
         };
         if (Enabled)
             ReadTree(window);
+        StartRootScan(window);
     }
 
     public void SetEnabled(bool enabled)
@@ -57,12 +58,16 @@ internal sealed class InstanceTracker(ITrackedInstances instances) : IInstanceTr
             // reference to the app's objects at all.
             options.WatchNavigation = false;
             instances.Clear();
+            roots.ForgetScan();
             return;
         }
 
         var windows = LiveWindows();
         foreach (var window in windows)
             ReadTree(window);
+        foreach (var root in roots.Explicit())
+            ShowRoot(root);
+        RefreshRoots();
         InspectorServices.Current.Logs.Write(Microsoft.Extensions.Logging.LogLevel.Debug, "MauiInspector",
             $"tracking on — re-read {windows.Count()} window(s), {instances.Count} objects");
     }

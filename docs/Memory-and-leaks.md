@@ -22,6 +22,15 @@ The **🧠 Memory** view answers "what is still in memory, and why" for the app 
   ```
 
   Only a weak reference is kept, the entry is marked *reported* in the ledger, and it counts towards the per-repetition growth like everything else.
+- **Overlays outside the page's tree** — a popup library that portals into the window (the root gets the MAUI `Window` as its `Parent`, or none, and its platform view goes straight onto the platform window: a subview of the `UIWindow` on iOS, a child of the activity's decor view on Android) raises no tree events on the window, so its elements were never tracked. The tracker now scans the platform window's direct children every 1.5 s and before every snapshot, maps the MAUI views among them back to their elements and tracks those trees like a page's: **attached while the root's platform view is on a platform window, detached once it is gone** — also when the host leaves `Parent` pointing at the window after taking the view off, the case that would otherwise count as attached forever. `options.Memory.DiscoverVisualRoots = false` turns the scan off. A root kept anywhere else (a native container of your own) is reported, weakly, and is attached until untracked:
+
+  ```csharp
+  Immons.Tools.Maui.Inspector.Memory.TrackVisualRoot(overlayRoot);
+  …
+  Immons.Tools.Maui.Inspector.Memory.UntrackVisualRoot(overlayRoot);
+  ```
+
+  An `Element` passed to `Navigation.ReportPushed` is such a root too, until `ReportPopped`.
 - **Who holds it, in-process** — every snapshot also scans the static fields of the app's own types and the events and fields of the long-lived objects (`Application`, its windows, the `Shell`, the page containers): a static event with a handler on a popped page, a static list a view model sits in, a `Window` event a page subscribed to — reported on the suspect as *held by static event LeakSource.Tick → OnTick*, with the remedy. Most MAUI leaks end here, without a dump.
 - **Parents chain & history** — click a suspect group for the tree it still sits in, up to the oldest ancestor; the **snapshot history** chart plots the detached count per app type across snapshots — the line that keeps climbing is the leak.
 - **Bisection aids** — `🧪 disconnect handlers on pop` and `🧪 clear BindingContext on pop`: repeat the flow with one of them on; if the suspects vanish, you know whether the handlers or the view model held the page. Diagnosis only, never a fix.

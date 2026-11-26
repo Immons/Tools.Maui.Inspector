@@ -23,6 +23,16 @@ public sealed class MemoryOptions
     /// </summary>
     public bool WatchNavigation { get; set; } = true;
 
+    /// <summary>
+    /// Finds visual roots the window's page tree does not contain — MAUI views an overlay host adds
+    /// straight to the platform window (a subview of the UIWindow, a child of the Android decor view),
+    /// with or without the MAUI window as their Parent — so their elements are tracked like a page's:
+    /// attached while the root is on the platform window, detached once it is gone. A scan of the
+    /// window's direct children every 1.5 s and before every snapshot. Roots the app knows can also
+    /// be reported with <see cref="Memory.TrackVisualRoot"/>. Needs <see cref="TrackInstances"/>. Default: true.
+    /// </summary>
+    public bool DiscoverVisualRoots { get; set; } = true;
+
     /// <summary>How long after the last page pop the watch-mode snapshot waits — animations and handlers need a moment. Default: 2 s.</summary>
     public TimeSpan WatchDelay { get; set; } = TimeSpan.FromSeconds(2);
 

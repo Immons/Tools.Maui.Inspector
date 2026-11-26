@@ -14,4 +14,12 @@ internal interface IInstanceTracker
     /// there is known.
     /// </summary>
     void SetEnabled(bool enabled);
+
+    /// <summary>A visual root outside the window's page tree, reported by the app: its elements count as attached until <see cref="UntrackRoot"/>.</summary>
+    void TrackRoot(Element root);
+
+    void UntrackRoot(Element root);
+
+    /// <summary>Scans the platform windows for hosted overlay roots (main thread); runs on a timer and before every snapshot.</summary>
+    void RefreshRoots();
 }
